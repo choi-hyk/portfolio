@@ -6,3 +6,5 @@ coverage
 package-lock.json
 next-env.d.ts
 public/*.svg
+.playwright-mcp
+portfolio-*-reference.png

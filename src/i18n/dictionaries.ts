@@ -8,9 +8,24 @@ type Writing = {
   href: string;
 };
 
+type Experience = {
+  company: string;
+  role: string;
+  period: string;
+  description: string;
+  highlights: string[];
+  stack: string[];
+};
+
+type SkillGroup = {
+  title: string;
+  items: string[];
+};
+
 type Dictionary = {
   profile: {
     name: string;
+    role: string;
     email: string;
     summary: string;
     links: {
@@ -19,12 +34,40 @@ type Dictionary = {
     };
   };
   nav: {
+    about: string;
+    experience: string;
     projects: string;
     writing: string;
+    openSource: string;
+    skills: string;
+    contact: string;
   };
   home: {
     eyebrow: string;
     title: string;
+    subtitle: string;
+    primaryCta: string;
+    secondaryCta: string;
+    flow: Array<{
+      label: string;
+      title: string;
+      description: string;
+    }>;
+    ide: {
+      explorer: string;
+      terminal: string;
+      theme: string;
+      light: string;
+      dark: string;
+      activeFile: string;
+      terminalCommand: string;
+      terminalStatus: string;
+      folders: {
+        root: string;
+        source: string;
+        content: string;
+      };
+    };
     github: string;
     velog: string;
     email: string;
@@ -35,6 +78,32 @@ type Dictionary = {
       description: string;
       cta: string;
     };
+  };
+  about: {
+    eyebrow: string;
+    title: string;
+    paragraphs: string[];
+  };
+  experience: {
+    eyebrow: string;
+    title: string;
+    items: Experience[];
+  };
+  skills: {
+    eyebrow: string;
+    title: string;
+    groups: SkillGroup[];
+  };
+  openSource: {
+    eyebrow: string;
+    title: string;
+    description: string;
+  };
+  contact: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    cta: string;
   };
   projectsPage: {
     eyebrow: string;
@@ -54,6 +123,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
   ko: {
     profile: {
       name: "Choi Hyuk",
+      role: "Backend / AI Application Developer",
       email: "blindlchoil@gmail.com",
       summary:
         "FastAPI와 Python 기반 백엔드 개발을 중심으로 RAG/LLM 서비스, MCP 기반 지식 관리, 개발 자동화 도구를 만들고 있습니다. 사이냅소프트에서 FastAPI와 RAG 기반 서비스 개발을 경험하고 있으며, 개인 및 조직 프로젝트를 통해 AI 애플리케이션을 제품 구조로 구현하는 데 집중하고 있습니다.",
@@ -63,12 +133,56 @@ export const dictionaries: Record<Locale, Dictionary> = {
       },
     },
     nav: {
+      about: "About",
+      experience: "Experience",
       projects: "Projects",
       writing: "Writing",
+      openSource: "Open Source",
+      skills: "Skills",
+      contact: "Contact",
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
       title: "FastAPI와 AI 서비스를 실제 제품 구조로 연결하는 개발자",
+      subtitle:
+        "RAG/LLM 서비스, MCP 기반 지식 관리, 개발 자동화 도구를 만들며 실무와 개인 프로젝트를 연결하고 있습니다.",
+      primaryCta: "핵심 프로젝트 보기",
+      secondaryCta: "기술 기록 보기",
+      flow: [
+        {
+          label: "Start",
+          title: "문제 정의",
+          description: "AI 기능을 데모가 아니라 운영 가능한 서비스 문제로 바라봅니다.",
+        },
+        {
+          label: "Build",
+          title: "구조 설계",
+          description:
+            "FastAPI, RAG, MCP, 자동화를 조합해 유지 가능한 구조로 만듭니다.",
+        },
+        {
+          label: "Proof",
+          title: "증거 확인",
+          description:
+            "조직 프로젝트, 공개 도구, 기술 글로 실제 작업 흔적을 보여줍니다.",
+        },
+      ],
+      ide: {
+        explorer: "파일 탐색기",
+        terminal: "터미널",
+        theme: "테마",
+        light: "Light",
+        dark: "Palenight",
+        activeFile: "README.md",
+        terminalCommand: "npm run profile",
+        terminalStatus:
+          "FastAPI / RAG / MCP / Organization Projects / Technical Writing",
+        folders: {
+          root: "portfolio",
+          source: "src",
+          content: "content",
+        },
+      },
       github: "GitHub",
       velog: "Velog",
       email: "Email",
@@ -84,6 +198,70 @@ export const dictionaries: Record<Locale, Dictionary> = {
           "HippoBox, Blueprint4Agent, 말하면 OK처럼 FastAPI, MCP, Agent, 음성/NLP 경험을 보여줄 수 있는 프로젝트를 우선 배치합니다.",
         cta: "모든 프로젝트 보기",
       },
+    },
+    about: {
+      eyebrow: "About",
+      title: "기술을 서비스 구조로 연결하는 백엔드 개발자입니다.",
+      paragraphs: [
+        "FastAPI와 Python 기반 백엔드 개발을 중심으로 RAG/LLM 서비스, MCP 기반 지식 관리, 개발 자동화 도구를 만들고 있습니다.",
+        "실무에서는 FastAPI와 RAG 기반 서비스 개발을 경험하고 있으며, 개인 및 조직 프로젝트에서는 AI 애플리케이션을 실제로 운영 가능한 구조로 만드는 데 집중하고 있습니다.",
+        "포트폴리오에서는 화려한 효과보다 프로젝트의 문제 정의, 역할, 기술 선택, 결과를 빠르게 파악할 수 있는 정석적인 구성을 우선합니다.",
+      ],
+    },
+    experience: {
+      eyebrow: "Experience",
+      title: "실무 경험",
+      items: [
+        {
+          company: "Synapsoft",
+          role: "Backend / AI Application Developer",
+          period: "2025.08 - Present",
+          description:
+            "FastAPI와 RAG 기반 서비스 개발에 참여하며 Python 백엔드와 LLM 기반 기능 구현 흐름을 경험했습니다.",
+          highlights: [
+            "FastAPI 기반 서비스 개발 및 유지보수",
+            "RAG 기반 기능 개발 참여",
+            "Python sync/async, ASGI, blocking/non-blocking 구조 학습 및 적용",
+            "LLM 기반 기능의 데이터 처리, API 설계, 응답 품질 개선 흐름 경험",
+          ],
+          stack: ["Python", "FastAPI", "RAG", "LLM", "Svelte"],
+        },
+      ],
+    },
+    skills: {
+      eyebrow: "Skills",
+      title: "주요 기술 스택",
+      groups: [
+        {
+          title: "Backend",
+          items: ["Python", "FastAPI", "ASGI", "REST API"],
+        },
+        {
+          title: "AI / LLM",
+          items: ["RAG", "LangChain", "OpenAI API", "MCP"],
+        },
+        {
+          title: "Frontend",
+          items: ["TypeScript", "React", "Svelte", "Tailwind CSS"],
+        },
+        {
+          title: "Automation / Deploy",
+          items: ["GitHub Actions", "PyPI", "Vercel", "GitHub Pages"],
+        },
+      ],
+    },
+    openSource: {
+      eyebrow: "Open Source",
+      title: "조직 프로젝트와 공개 도구를 중심으로 활동합니다.",
+      description:
+        "HippoBox, Blueprint4Agent, Today in Tech처럼 조직 단위로 분리한 프로젝트를 운영하고, velog-sync처럼 재사용 가능한 공개 도구도 함께 관리합니다.",
+    },
+    contact: {
+      eyebrow: "Contact",
+      title: "FastAPI, RAG, MCP 기반 서비스에 관심이 있습니다.",
+      description:
+        "백엔드와 AI 애플리케이션을 제품 구조로 만드는 일에 관심이 있습니다. 프로젝트, 협업, 채용 관련 연락은 이메일 또는 GitHub를 통해 확인할 수 있습니다.",
+      cta: "이메일 보내기",
     },
     projectsPage: {
       eyebrow: "Projects",
@@ -186,6 +364,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
   en: {
     profile: {
       name: "Choi Hyuk",
+      role: "Backend / AI Application Developer",
       email: "blindlchoil@gmail.com",
       summary:
         "I build FastAPI and Python-based backend services, RAG/LLM applications, MCP-powered knowledge tools, and developer automation. At Synapsoft, I have worked on FastAPI and RAG-based service development, and I focus on turning AI application ideas into product-ready structures through personal and organization projects.",
@@ -195,12 +374,56 @@ export const dictionaries: Record<Locale, Dictionary> = {
       },
     },
     nav: {
+      about: "About",
+      experience: "Experience",
       projects: "Projects",
       writing: "Writing",
+      openSource: "Open Source",
+      skills: "Skills",
+      contact: "Contact",
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
       title: "Connecting FastAPI and AI services into product-ready systems",
+      subtitle:
+        "I connect practical backend work with RAG/LLM services, MCP-powered knowledge tools, and developer automation.",
+      primaryCta: "View core projects",
+      secondaryCta: "Read technical notes",
+      flow: [
+        {
+          label: "Start",
+          title: "Define the problem",
+          description: "I frame AI features as service problems, not one-off demos.",
+        },
+        {
+          label: "Build",
+          title: "Design the structure",
+          description:
+            "I combine FastAPI, RAG, MCP, and automation into maintainable systems.",
+        },
+        {
+          label: "Proof",
+          title: "Show the evidence",
+          description:
+            "Organization projects, public tools, and technical writing prove the work.",
+        },
+      ],
+      ide: {
+        explorer: "Explorer",
+        terminal: "Terminal",
+        theme: "Theme",
+        light: "Light",
+        dark: "Palenight",
+        activeFile: "README.md",
+        terminalCommand: "npm run profile",
+        terminalStatus:
+          "FastAPI / RAG / MCP / Organization Projects / Technical Writing",
+        folders: {
+          root: "portfolio",
+          source: "src",
+          content: "content",
+        },
+      },
       github: "GitHub",
       velog: "Velog",
       email: "Email",
@@ -216,6 +439,70 @@ export const dictionaries: Record<Locale, Dictionary> = {
           "The portfolio prioritizes projects that show FastAPI, MCP, agent workflows, voice interfaces, and NLP experience.",
         cta: "View all projects",
       },
+    },
+    about: {
+      eyebrow: "About",
+      title: "A backend developer turning technical ideas into service structures.",
+      paragraphs: [
+        "I build FastAPI and Python-based backend services, RAG/LLM applications, MCP-powered knowledge tools, and developer automation.",
+        "At work, I have experience with FastAPI and RAG-based service development. In personal and organization projects, I focus on shaping AI applications into maintainable product structures.",
+        "This portfolio favors a conventional, content-first structure so readers can quickly understand the problems, roles, technical choices, and outcomes behind each project.",
+      ],
+    },
+    experience: {
+      eyebrow: "Experience",
+      title: "Work experience",
+      items: [
+        {
+          company: "Synapsoft",
+          role: "Backend / AI Application Developer",
+          period: "2025.08 - Present",
+          description:
+            "Worked on FastAPI and RAG-based service development, gaining experience in Python backend systems and LLM-powered feature workflows.",
+          highlights: [
+            "Developed and maintained FastAPI-based services",
+            "Participated in RAG-based feature development",
+            "Applied Python sync/async, ASGI, and blocking/non-blocking concepts",
+            "Worked on data processing, API design, and response quality improvement for LLM features",
+          ],
+          stack: ["Python", "FastAPI", "RAG", "LLM", "Svelte"],
+        },
+      ],
+    },
+    skills: {
+      eyebrow: "Skills",
+      title: "Core technical stack",
+      groups: [
+        {
+          title: "Backend",
+          items: ["Python", "FastAPI", "ASGI", "REST API"],
+        },
+        {
+          title: "AI / LLM",
+          items: ["RAG", "LangChain", "OpenAI API", "MCP"],
+        },
+        {
+          title: "Frontend",
+          items: ["TypeScript", "React", "Svelte", "Tailwind CSS"],
+        },
+        {
+          title: "Automation / Deploy",
+          items: ["GitHub Actions", "PyPI", "Vercel", "GitHub Pages"],
+        },
+      ],
+    },
+    openSource: {
+      eyebrow: "Open Source",
+      title: "Organization projects and reusable public tools.",
+      description:
+        "I manage organization-level projects such as HippoBox, Blueprint4Agent, and Today in Tech, along with reusable public tools like velog-sync.",
+    },
+    contact: {
+      eyebrow: "Contact",
+      title: "Interested in FastAPI, RAG, and MCP-based services.",
+      description:
+        "I am interested in building backend and AI applications as product-ready systems. For projects, collaboration, or hiring, please reach out by email or GitHub.",
+      cta: "Send email",
     },
     projectsPage: {
       eyebrow: "Projects",

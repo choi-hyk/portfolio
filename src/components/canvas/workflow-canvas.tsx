@@ -1,0 +1,951 @@
+"use client";
+
+import {
+  type CSSProperties,
+  type PointerEvent,
+  type ReactNode,
+  type WheelEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+type CanvasPoint = {
+  x: number;
+  y: number;
+};
+
+export type CanvasNodeKind = "note" | "code" | "mermaid" | "mention";
+
+export type CanvasNode = {
+  id: string;
+  kind: CanvasNodeKind;
+  markdown: string;
+  x: number;
+  y: number;
+  width: number;
+};
+
+export type CanvasEdge = {
+  id: string;
+  from: string;
+  to: string;
+  directed?: boolean;
+  fromPoint: CanvasPoint;
+  toPoint: CanvasPoint;
+};
+
+export type CanvasShell = {
+  border: string;
+  panel: string;
+  editor: string;
+  accent: string;
+  accentBg: string;
+  muted: string;
+  strong: string;
+};
+
+type WorkflowCanvasProps = {
+  label: string;
+  nodes: CanvasNode[];
+  edges: CanvasEdge[];
+  shell: CanvasShell;
+  occludedLeft?: number;
+};
+
+const CANVAS_SIZE = {
+  width: 2000,
+  height: 1400,
+};
+const NODE_REVEAL_STEP_MS = 360;
+const EDGE_REVEAL_STEP_MS = 180;
+const EDGE_REVEAL_OFFSET_MS = 520;
+
+export function WorkflowCanvas({
+  label,
+  nodes,
+  edges,
+  shell,
+  occludedLeft = 0,
+}: WorkflowCanvasProps) {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef<{
+    pointerX: number;
+    pointerY: number;
+    panX: number;
+    panY: number;
+  } | null>(null);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
+  const [canvasSize, setCanvasSize] = useState({ width: 1, height: 1 });
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const boundedPan = clampPan(pan, canvasSize, occludedLeft);
+  const nodeAnimationOrder = getTopLeftRenderOrder(nodes);
+  const orderedNodes = getTopLeftOrderedNodes(nodes);
+  const edgeAnimationBaseDelay =
+    nodes.length * NODE_REVEAL_STEP_MS + EDGE_REVEAL_OFFSET_MS;
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === "Space" && !isEditableTarget(event.target)) {
+        event.preventDefault();
+        setIsSpacePressed(true);
+      }
+    };
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.code === "Space") {
+        setIsSpacePressed(false);
+        setIsPanning(false);
+        dragStartRef.current = null;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!canvasRef.current) {
+      return;
+    }
+
+    const observer = new ResizeObserver(([entry]) => {
+      setCanvasSize({
+        width: Math.max(1, entry.contentRect.width),
+        height: Math.max(1, entry.contentRect.height),
+      });
+    });
+
+    observer.observe(canvasRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (!isSpacePressed) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragStartRef.current = {
+      pointerX: event.clientX,
+      pointerY: event.clientY,
+      panX: boundedPan.x,
+      panY: boundedPan.y,
+    };
+    setIsPanning(true);
+  };
+
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (!dragStartRef.current) {
+      return;
+    }
+
+    event.preventDefault();
+    const nextPan = clampPan(
+      {
+        x: dragStartRef.current.panX + event.clientX - dragStartRef.current.pointerX,
+        y: dragStartRef.current.panY + event.clientY - dragStartRef.current.pointerY,
+      },
+      canvasSize,
+      occludedLeft,
+    );
+
+    setPan(nextPan);
+    setSelectedNodeId(
+      getViewportFocusedNodeId(nodes, nextPan, canvasSize, occludedLeft),
+    );
+  };
+
+  const handlePointerEnd = (event: PointerEvent<HTMLDivElement>) => {
+    if (dragStartRef.current) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    dragStartRef.current = null;
+    setIsPanning(false);
+  };
+
+  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setPan((current) => {
+      const nextPan = clampPan(
+        {
+          x: current.x - event.deltaX,
+          y: current.y - event.deltaY,
+        },
+        canvasSize,
+        occludedLeft,
+      );
+
+      setSelectedNodeId(
+        getViewportFocusedNodeId(nodes, nextPan, canvasSize, occludedLeft),
+      );
+
+      return nextPan;
+    });
+  };
+  const handleMiniMapNavigate = (point: CanvasPoint) => {
+    const effectiveLeft = Math.min(occludedLeft, canvasSize.width);
+    const effectiveWidth = Math.max(1, canvasSize.width - effectiveLeft);
+    const nextPan = {
+      x: effectiveLeft - point.x * CANVAS_SIZE.width + effectiveWidth / 2,
+      y: -point.y * CANVAS_SIZE.height + canvasSize.height / 2,
+    };
+
+    const boundedNextPan = clampPan(nextPan, canvasSize, occludedLeft);
+
+    setPan(boundedNextPan);
+    setSelectedNodeId(
+      getViewportFocusedNodeId(nodes, boundedNextPan, canvasSize, occludedLeft),
+    );
+  };
+  const handleNodeFocus = (node: CanvasNode) => {
+    if (isSpacePressed || isPanning) {
+      return;
+    }
+
+    const nodeBox = getNodeBox(node);
+    const nodeCenter = {
+      x: nodeBox.x + nodeBox.width / 2,
+      y: nodeBox.y + nodeBox.height / 2,
+    };
+    const nextPan = {
+      x: canvasSize.width / 2 - nodeCenter.x,
+      y: canvasSize.height / 2 - nodeCenter.y,
+    };
+
+    setSelectedNodeId(node.id);
+    setPan(clampPan(nextPan, canvasSize, occludedLeft));
+  };
+  const handleStepFocus = (direction: "previous" | "next") => {
+    const currentNodeId =
+      selectedNodeId ??
+      getViewportFocusedNodeId(nodes, boundedPan, canvasSize, occludedLeft) ??
+      orderedNodes[0]?.id;
+    const currentIndex = orderedNodes.findIndex((node) => node.id === currentNodeId);
+    const fallbackIndex = currentIndex >= 0 ? currentIndex : 0;
+    const nextIndex =
+      direction === "previous"
+        ? Math.max(0, fallbackIndex - 1)
+        : Math.min(orderedNodes.length - 1, fallbackIndex + 1);
+    const nextNode = orderedNodes[nextIndex];
+
+    if (nextNode) {
+      handleNodeFocus(nextNode);
+    }
+  };
+
+  return (
+    <div
+      ref={canvasRef}
+      id="profile-canvas"
+      aria-label={label}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerEnd}
+      onPointerCancel={handlePointerEnd}
+      onWheel={handleWheel}
+      className={[
+        `workflow-canvas relative overflow-hidden border-0 ${shell.border} ${shell.editor}`,
+        isSpacePressed || isPanning ? "cursor-grab active:cursor-grabbing" : "",
+      ].join(" ")}
+      style={{
+        backgroundPosition: `${boundedPan.x}px ${boundedPan.y}px`,
+      }}
+    >
+      <div
+        className={[
+          "absolute left-0 top-0",
+          isPanning
+            ? ""
+            : "transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        ].join(" ")}
+        style={{
+          width: CANVAS_SIZE.width,
+          height: CANVAS_SIZE.height,
+          transform: `translate3d(${boundedPan.x}px, ${boundedPan.y}px, 0)`,
+        }}
+      >
+        <CanvasEdges
+          edges={edges}
+          nodes={nodes}
+          animationBaseDelay={edgeAnimationBaseDelay}
+        />
+
+        <div className="relative z-10 h-full w-full space-y-4 p-4 md:block md:space-y-0 md:p-0">
+          {nodes.map((node) => (
+            <MarkdownNode
+              key={node.id}
+              node={node}
+              shell={shell}
+              animationOrder={nodeAnimationOrder.get(node.id) ?? 0}
+              selected={selectedNodeId === node.id}
+              onFocus={() => handleNodeFocus(node)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <CanvasMiniMap
+        nodes={nodes}
+        pan={boundedPan}
+        viewportSize={canvasSize}
+        canvasSize={CANVAS_SIZE}
+        occludedLeft={occludedLeft}
+        onNavigate={handleMiniMapNavigate}
+      />
+      <CanvasStepControls
+        currentIndex={Math.max(
+          0,
+          orderedNodes.findIndex((node) => node.id === selectedNodeId),
+        )}
+        total={orderedNodes.length}
+        onPrevious={() => handleStepFocus("previous")}
+        onNext={() => handleStepFocus("next")}
+      />
+    </div>
+  );
+}
+
+type CanvasStepControlsProps = {
+  currentIndex: number;
+  total: number;
+  onPrevious: () => void;
+  onNext: () => void;
+};
+
+function CanvasStepControls({
+  currentIndex,
+  total,
+  onPrevious,
+  onNext,
+}: CanvasStepControlsProps) {
+  const isPreviousDisabled = currentIndex <= 0;
+  const isNextDisabled = currentIndex >= total - 1;
+  const buttonClass =
+    "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full transition";
+  const enabledClass = "text-zinc-600 hover:bg-teal-50 hover:text-teal-900";
+  const disabledClass = "cursor-default text-zinc-300 hover:bg-zinc-50";
+
+  return (
+    <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-teal-200 bg-white/90 px-2 py-1.5 shadow-md shadow-teal-900/10 backdrop-blur">
+      <button
+        type="button"
+        aria-label="Focus previous node"
+        aria-disabled={isPreviousDisabled}
+        onClick={() => {
+          if (!isPreviousDisabled) {
+            onPrevious();
+          }
+        }}
+        className={`${buttonClass} ${isPreviousDisabled ? disabledClass : enabledClass}`}
+      >
+        <span aria-hidden="true">←</span>
+      </button>
+      <span className="min-w-12 text-center text-xs font-medium text-zinc-500">
+        {currentIndex + 1}/{total}
+      </span>
+      <button
+        type="button"
+        aria-label="Focus next node"
+        aria-disabled={isNextDisabled}
+        onClick={() => {
+          if (!isNextDisabled) {
+            onNext();
+          }
+        }}
+        className={`${buttonClass} ${isNextDisabled ? disabledClass : enabledClass}`}
+      >
+        <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  );
+}
+
+type CanvasMiniMapProps = {
+  nodes: CanvasNode[];
+  pan: CanvasPoint;
+  viewportSize: {
+    width: number;
+    height: number;
+  };
+  canvasSize: {
+    width: number;
+    height: number;
+  };
+  occludedLeft: number;
+  onNavigate: (point: CanvasPoint) => void;
+};
+
+function CanvasMiniMap({
+  nodes,
+  pan,
+  viewportSize,
+  canvasSize,
+  occludedLeft,
+  onNavigate,
+}: CanvasMiniMapProps) {
+  const miniMapRef = useRef<HTMLDivElement>(null);
+  const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
+  const effectiveWidth = Math.max(1, viewportSize.width - effectiveLeft);
+  const viewportWidth = clamp((effectiveWidth / canvasSize.width) * 100, 8, 100);
+  const viewportHeight = clamp((viewportSize.height / canvasSize.height) * 100, 8, 100);
+  const viewport = {
+    x: clamp(
+      ((-pan.x + effectiveLeft) / canvasSize.width) * 100,
+      0,
+      100 - viewportWidth,
+    ),
+    y: clamp((-pan.y / canvasSize.height) * 100, 0, 100 - viewportHeight),
+    width: viewportWidth,
+    height: viewportHeight,
+  };
+
+  const navigate = (clientX: number, clientY: number) => {
+    if (!miniMapRef.current) {
+      return;
+    }
+
+    const rect = miniMapRef.current.getBoundingClientRect();
+    onNavigate({
+      x: clamp((clientX - rect.left) / rect.width, 0, 1),
+      y: clamp((clientY - rect.top) / rect.height, 0, 1),
+    });
+  };
+
+  return (
+    <div
+      ref={miniMapRef}
+      role="button"
+      tabIndex={0}
+      aria-label="Move canvas viewport"
+      onPointerDown={(event) => {
+        event.currentTarget.setPointerCapture(event.pointerId);
+        navigate(event.clientX, event.clientY);
+      }}
+      onPointerMove={(event) => {
+        if (event.buttons === 1) {
+          navigate(event.clientX, event.clientY);
+        }
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onNavigate({ x: 0.5, y: 0.5 });
+        }
+      }}
+      className="absolute bottom-4 right-4 z-20 h-28 w-40 cursor-pointer rounded-md border border-teal-200 bg-white/90 p-2 shadow-md shadow-teal-900/10 backdrop-blur transition hover:border-teal-300"
+    >
+      <svg
+        aria-hidden="true"
+        className="h-full w-full text-teal-700"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <rect
+          x="0"
+          y="0"
+          width="100"
+          height="100"
+          rx="3"
+          className="fill-zinc-50 stroke-zinc-200"
+          vectorEffect="non-scaling-stroke"
+        />
+        {nodes.map((node) => (
+          <rect
+            key={node.id}
+            x={node.x}
+            y={node.y}
+            width={node.width}
+            height={node.kind === "code" ? 16 : 13}
+            rx="2"
+            className={
+              node.kind === "mention"
+                ? "fill-teal-100 stroke-teal-400"
+                : "fill-white stroke-zinc-300"
+            }
+            vectorEffect="non-scaling-stroke"
+          />
+        ))}
+        <rect
+          x={viewport.x}
+          y={viewport.y}
+          width={viewport.width}
+          height={viewport.height}
+          rx="2"
+          className="fill-teal-500/15 stroke-teal-800"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    </div>
+  );
+}
+
+type CanvasEdgesProps = {
+  edges: CanvasEdge[];
+  nodes: CanvasNode[];
+  animationBaseDelay: number;
+};
+
+function CanvasEdges({ edges, nodes, animationBaseDelay }: CanvasEdgesProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-0 hidden h-full w-full text-teal-700 md:block"
+      viewBox={`0 0 ${CANVAS_SIZE.width} ${CANVAS_SIZE.height}`}
+    >
+      <defs>
+        <marker
+          id="canvas-arrow"
+          markerHeight="6"
+          markerWidth="6"
+          orient="auto"
+          refX="5"
+          refY="3"
+        >
+          <path d="M0,0 L6,3 L0,6 Z" className="fill-current" />
+        </marker>
+      </defs>
+      {edges.map((edge, index) => {
+        const fromNode = nodes.find((node) => node.id === edge.from);
+        const toNode = nodes.find((node) => node.id === edge.to);
+
+        if (!fromNode || !toNode) {
+          return null;
+        }
+
+        const path = getEdgePath(fromNode, toNode);
+
+        return (
+          <path
+            key={edge.id}
+            d={path}
+            className="workflow-edge fill-none"
+            markerEnd={edge.directed ? "url(#canvas-arrow)" : undefined}
+            stroke="currentColor"
+            pathLength={1}
+            strokeLinecap="round"
+            strokeWidth="0.42"
+            style={{
+              animationDelay: `${animationBaseDelay + index * EDGE_REVEAL_STEP_MS}ms`,
+            }}
+            vectorEffect="non-scaling-stroke"
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+function getEdgePath(fromNode: CanvasNode, toNode: CanvasNode) {
+  const fromBox = getNodeBox(fromNode);
+  const toBox = getNodeBox(toNode);
+  const fromCenter = {
+    x: fromBox.x + fromBox.width / 2,
+    y: fromBox.y + fromBox.height / 2,
+  };
+  const toCenter = {
+    x: toBox.x + toBox.width / 2,
+    y: toBox.y + toBox.height / 2,
+  };
+  const fromRightToLeft = fromCenter.x <= toCenter.x;
+  const start = {
+    x: fromRightToLeft ? fromBox.x + fromBox.width : fromBox.x,
+    y: fromCenter.y,
+  };
+  const end = {
+    x: fromRightToLeft ? toBox.x : toBox.x + toBox.width,
+    y: toCenter.y,
+  };
+  const controlDistance = Math.max(120, Math.abs(end.x - start.x) * 0.45);
+  const firstControl = {
+    x: start.x + (fromRightToLeft ? controlDistance : -controlDistance),
+    y: start.y,
+  };
+  const secondControl = {
+    x: end.x + (fromRightToLeft ? -controlDistance : controlDistance),
+    y: end.y,
+  };
+
+  return [
+    `M ${start.x} ${start.y}`,
+    `C ${firstControl.x} ${firstControl.y}, ${secondControl.x} ${secondControl.y}, ${end.x} ${end.y}`,
+  ].join(" ");
+}
+
+function getNodeBox(node: CanvasNode) {
+  return {
+    x: (node.x / 100) * CANVAS_SIZE.width,
+    y: (node.y / 100) * CANVAS_SIZE.height,
+    width: (node.width / 100) * CANVAS_SIZE.width,
+    height: getNodeHeight(node),
+  };
+}
+
+function getNodeHeight(node: CanvasNode) {
+  if (node.kind === "code") {
+    return 250;
+  }
+
+  if (node.kind === "mermaid") {
+    return 230;
+  }
+
+  if (node.kind === "mention") {
+    return 180;
+  }
+
+  return node.id === "intro" ? 230 : 185;
+}
+
+type MarkdownNodeProps = {
+  node: CanvasNode;
+  shell: CanvasShell;
+  animationOrder: number;
+  selected: boolean;
+  onFocus: () => void;
+};
+
+function MarkdownNode({
+  node,
+  shell,
+  animationOrder,
+  selected,
+  onFocus,
+}: MarkdownNodeProps) {
+  const variant = {
+    note: "border-t-4 border-t-teal-500 bg-white",
+    code: "border-t-4 border-t-zinc-700 bg-zinc-950 text-zinc-100",
+    mermaid: "border-t-4 border-t-sky-500 bg-sky-50/70",
+    mention: "border-t-4 border-t-emerald-500 bg-emerald-50",
+  }[node.kind];
+
+  return (
+    <article
+      role="button"
+      tabIndex={0}
+      aria-label={`Focus ${node.id} node`}
+      data-selected={selected}
+      onClick={onFocus}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onFocus();
+        }
+      }}
+      className={`workflow-node rounded-md border border-zinc-200 p-4 shadow-md shadow-zinc-900/8 backdrop-blur ${variant}`}
+      style={
+        {
+          left: `${node.x}%`,
+          top: `${node.y}%`,
+          width: `${node.width}%`,
+          animationDelay: `${animationOrder * NODE_REVEAL_STEP_MS}ms`,
+        } as CSSProperties
+      }
+    >
+      <MarkdownBody markdown={node.markdown} kind={node.kind} shell={shell} />
+    </article>
+  );
+}
+
+type MarkdownBodyProps = {
+  markdown: string;
+  kind: CanvasNodeKind;
+  shell: CanvasShell;
+};
+
+function MarkdownBody({ markdown, kind, shell }: MarkdownBodyProps) {
+  const blocks = parseMarkdown(markdown);
+
+  return (
+    <div className="space-y-3 text-sm leading-6">
+      {blocks.map((block, index) => {
+        if (block.type === "heading") {
+          const Heading = block.level === 1 ? "h2" : "h3";
+
+          return (
+            <Heading
+              key={`${block.raw}-${index}`}
+              className={`font-semibold tracking-tight ${
+                block.level === 1 ? "text-xl" : "text-base"
+              } ${kind === "code" ? "text-white" : shell.strong}`}
+            >
+              {renderInline(block.text, shell, kind)}
+            </Heading>
+          );
+        }
+
+        if (block.type === "list") {
+          return (
+            <ul key={`${block.raw}-${index}`} className="space-y-1">
+              {block.items.map((item) => (
+                <li key={item} className="flex gap-2">
+                  <span
+                    className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${shell.accentBg}`}
+                  />
+                  <span>{renderInline(item, shell, kind)}</span>
+                </li>
+              ))}
+            </ul>
+          );
+        }
+
+        if (block.type === "code") {
+          return (
+            <pre
+              key={`${block.raw}-${index}`}
+              className={`overflow-x-auto rounded-md border p-3 font-mono text-xs leading-5 ${
+                block.language === "mermaid"
+                  ? `${shell.border} ${shell.panel} ${shell.muted}`
+                  : "border-zinc-800 bg-zinc-950 text-zinc-100"
+              }`}
+            >
+              <code>
+                {block.language ? (
+                  <span className={shell.accent}>
+                    {block.language}
+                    {"\n"}
+                  </span>
+                ) : null}
+                {block.text}
+              </code>
+            </pre>
+          );
+        }
+
+        return (
+          <p
+            key={`${block.raw}-${index}`}
+            className={kind === "code" ? "text-zinc-300" : shell.muted}
+          >
+            {renderInline(block.text, shell, kind)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+type MarkdownBlock =
+  | {
+      type: "heading";
+      level: 1 | 2;
+      text: string;
+      raw: string;
+    }
+  | {
+      type: "paragraph";
+      text: string;
+      raw: string;
+    }
+  | {
+      type: "list";
+      items: string[];
+      raw: string;
+    }
+  | {
+      type: "code";
+      language: string;
+      text: string;
+      raw: string;
+    };
+
+function parseMarkdown(markdown: string): MarkdownBlock[] {
+  const lines = markdown.trim().split("\n");
+  const blocks: MarkdownBlock[] = [];
+  let list: string[] = [];
+  let code: string[] = [];
+  let codeLanguage = "";
+  let inCode = false;
+
+  const flushList = () => {
+    if (list.length > 0) {
+      blocks.push({ type: "list", items: list, raw: list.join("\n") });
+      list = [];
+    }
+  };
+
+  lines.forEach((line) => {
+    if (line.startsWith("```")) {
+      if (inCode) {
+        blocks.push({
+          type: "code",
+          language: codeLanguage,
+          text: code.join("\n"),
+          raw: code.join("\n"),
+        });
+        code = [];
+        codeLanguage = "";
+        inCode = false;
+        return;
+      }
+
+      flushList();
+      codeLanguage = line.replace("```", "").trim();
+      inCode = true;
+      return;
+    }
+
+    if (inCode) {
+      code.push(line);
+      return;
+    }
+
+    if (line.startsWith("- ")) {
+      list.push(line.replace("- ", ""));
+      return;
+    }
+
+    flushList();
+
+    if (line.startsWith("# ")) {
+      blocks.push({
+        type: "heading",
+        level: 1,
+        text: line.replace("# ", ""),
+        raw: line,
+      });
+      return;
+    }
+
+    if (line.startsWith("## ")) {
+      blocks.push({
+        type: "heading",
+        level: 2,
+        text: line.replace("## ", ""),
+        raw: line,
+      });
+      return;
+    }
+
+    if (line.trim()) {
+      blocks.push({ type: "paragraph", text: line, raw: line });
+    }
+  });
+
+  flushList();
+
+  return blocks;
+}
+
+function renderInline(
+  text: string,
+  shell: CanvasShell,
+  kind: CanvasNodeKind,
+): ReactNode {
+  const parts = text.split(/(`[^`]+`|@\w[\w-]*)/g).filter(Boolean);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return (
+        <code
+          key={`${part}-${index}`}
+          className={`rounded px-1.5 py-0.5 font-mono text-xs ${
+            kind === "code"
+              ? "bg-white/10 text-white"
+              : `${shell.accentBg} ${shell.accent}`
+          }`}
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+
+    if (part.startsWith("@")) {
+      return (
+        <span
+          key={`${part}-${index}`}
+          className={`mr-1 inline-flex rounded px-1.5 py-0.5 font-mono text-xs ${shell.accentBg} ${shell.accent}`}
+        >
+          {part}
+        </span>
+      );
+    }
+
+    return <span key={`${part}-${index}`}>{part}</span>;
+  });
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function clampPan(
+  pan: CanvasPoint,
+  viewportSize: { width: number; height: number },
+  occludedLeft: number,
+) {
+  const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
+  const minX = Math.min(0, viewportSize.width - CANVAS_SIZE.width);
+  const maxX = effectiveLeft;
+  const minY = Math.min(0, viewportSize.height - CANVAS_SIZE.height);
+  const maxY = 0;
+
+  return {
+    x: clamp(pan.x, minX, maxX),
+    y: clamp(pan.y, minY, maxY),
+  };
+}
+
+function getTopLeftRenderOrder(nodes: CanvasNode[]) {
+  return new Map(getTopLeftOrderedNodes(nodes).map((node, index) => [node.id, index]));
+}
+
+function getTopLeftOrderedNodes(nodes: CanvasNode[]) {
+  return [...nodes].sort((a, b) => {
+    const diagonal = a.x + a.y - (b.x + b.y);
+
+    if (Math.abs(diagonal) > 6) {
+      return diagonal;
+    }
+
+    return a.x - b.x;
+  });
+}
+
+function getViewportFocusedNodeId(
+  nodes: CanvasNode[],
+  pan: CanvasPoint,
+  viewportSize: { width: number; height: number },
+  occludedLeft: number,
+) {
+  const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
+  const effectiveWidth = Math.max(1, viewportSize.width - effectiveLeft);
+  const viewportCenter = {
+    x: -pan.x + effectiveLeft + effectiveWidth / 2,
+    y: -pan.y + viewportSize.height / 2,
+  };
+
+  return [...nodes]
+    .map((node) => {
+      const box = getNodeBox(node);
+      const center = {
+        x: box.x + box.width / 2,
+        y: box.y + box.height / 2,
+      };
+
+      return {
+        id: node.id,
+        distance: Math.hypot(center.x - viewportCenter.x, center.y - viewportCenter.y),
+      };
+    })
+    .sort((a, b) => a.distance - b.distance)[0]?.id;
+}
+
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest("input, textarea, select, button, a, [contenteditable='true']"),
+  );
+}
