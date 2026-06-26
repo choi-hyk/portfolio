@@ -9,7 +9,7 @@ src/data/         정적 데이터 어댑터
 src/i18n/         언어 설정과 사전
 src/types/        프로젝트 내부 타입 선언
 content/          MDX 콘텐츠
-docs/harness/     프로젝트 규칙 문서
+harness/          프로젝트 규칙 문서
 ```
 
 ## 네이밍
