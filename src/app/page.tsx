@@ -1,65 +1,97 @@
-import Image from "next/image";
+import { ArrowUpRight, Code2, Mail, NotebookText } from "lucide-react";
+import Link from "next/link";
+import { ProjectCard } from "@/components/project-card";
+import { SectionHeading } from "@/components/section-heading";
+import { defaultLocale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
 
 export default function Home() {
+  const dictionary = getDictionary(defaultLocale);
+  const { profile } = dictionary;
+  const featuredProjects = dictionary.projects.filter((project) => project.featured);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="min-h-screen">
+      <section className="border-b border-zinc-200 bg-zinc-950 text-zinc-50">
+        <div className="mx-auto flex min-h-[74vh] max-w-6xl flex-col justify-between px-5 py-8 sm:px-8 lg:px-10">
+          <nav className="flex items-center justify-between text-sm text-zinc-300">
+            <span className="font-medium text-zinc-50">{profile.name}</span>
+            <div className="flex items-center gap-4">
+              <Link href="/projects" className="hover:text-white">
+                {dictionary.nav.projects}
+              </Link>
+              <Link href="/writing" className="hover:text-white">
+                {dictionary.nav.writing}
+              </Link>
+            </div>
+          </nav>
+
+          <div className="max-w-4xl py-16">
+            <p className="mb-5 text-sm font-medium uppercase tracking-[0.18em] text-amber-300">
+              {dictionary.home.eyebrow}
+            </p>
+            <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-6xl">
+              {dictionary.home.title}
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-300 sm:text-lg">
+              {profile.summary}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a
+                href={profile.links.github}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-4 text-sm font-medium text-zinc-950 transition hover:bg-amber-200"
+              >
+                <Code2 size={18} />
+                {dictionary.home.github}
+              </a>
+              <a
+                href={profile.links.velog}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-11 items-center gap-2 rounded-md border border-zinc-700 px-4 text-sm font-medium text-zinc-50 transition hover:border-zinc-400"
+              >
+                <NotebookText size={18} />
+                {dictionary.home.velog}
+              </a>
+              <a
+                href={`mailto:${profile.email}`}
+                className="inline-flex h-11 items-center gap-2 rounded-md border border-zinc-700 px-4 text-sm font-medium text-zinc-50 transition hover:border-zinc-400"
+              >
+                <Mail size={18} />
+                {dictionary.home.email}
+              </a>
+            </div>
+          </div>
+
+          <div className="grid gap-4 border-t border-zinc-800 pt-6 text-sm text-zinc-300 sm:grid-cols-3">
+            {dictionary.home.stats.map((stat) => (
+              <p key={stat}>{stat}</p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 lg:px-10">
+        <SectionHeading
+          eyebrow={dictionary.home.selectedProjects.eyebrow}
+          title={dictionary.home.selectedProjects.title}
+          description={dictionary.home.selectedProjects.description}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <div className="mt-8 grid gap-5 md:grid-cols-2">
+          {featuredProjects.map((project) => (
+            <ProjectCard key={project.slug} project={project} />
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        <Link
+          href="/projects"
+          className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-zinc-950"
+        >
+          {dictionary.home.selectedProjects.cta}
+          <ArrowUpRight size={16} />
+        </Link>
+      </section>
+    </main>
   );
 }

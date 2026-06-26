@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Choi Hyuk 포트폴리오
 
-## Getting Started
+Next.js 기반 포트폴리오 사이트입니다. Vercel 배포를 전제로 구성했습니다.
 
-First, run the development server:
+## 스택
+
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- MDX
+- lucide-react
+- npm
+
+## 스크립트
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run format
+npm run format:check
+npm run lint
+npm run lint:fix
+npm run typecheck
+npm run check
+npm run build
+npm run harness
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 구조
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+src/app/          App Router 페이지
+src/components/   공용 UI 컴포넌트
+src/data/         프로필, 프로젝트, 글 데이터
+src/types/        프로젝트 내부 타입 선언
+src/i18n/         언어 설정과 사전
+content/          향후 MDX 프로젝트/글 콘텐츠
+docs/harness/     프로젝트 규칙 문서
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 하네스
 
-## Learn More
+프로젝트 규칙은 [docs/harness/README.md](./docs/harness/README.md)에 정리한다.
 
-To learn more about Next.js, take a look at the following resources:
+커밋 메시지는 Conventional Commits를 따르되, subject는 한국어로 작성한다. 이 저장소는 `.githooks/commit-msg`를 버전 관리되는 Git hook으로 사용한다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+공개 저장소에 포함되는 문서는 [공개 문서 작성 규칙](./docs/harness/public-docs.md)을 따른다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+포맷, 린트, 타입 체크, IDE 설정은 [개발 도구 규칙](./docs/harness/tooling.md)을 따른다.
 
-## Deploy on Vercel
+## 로컬 개발
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm install
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+브라우저에서 `http://localhost:3000`을 연다.
