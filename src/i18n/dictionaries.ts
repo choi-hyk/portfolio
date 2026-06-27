@@ -181,7 +181,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
-      title: "AI의 진화, 개발의 진화",
+      title: "AI를 활용하는 방식을 설계하는 엔지니어",
       subtitle:
         "저는 AI를 소비하는 개발자가 아니라, AI를 개발 방식으로 만드는 개발자가 되고자 합니다.",
       slogan: {
@@ -464,7 +464,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
-      title: "AI evolves. Development evolves.",
+      title: "Engineering How AI Is Applied",
       subtitle:
         "I aim to be a developer who turns AI into a development practice, not just a developer who consumes AI.",
       slogan: {
