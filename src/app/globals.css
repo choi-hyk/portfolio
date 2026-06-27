@@ -39,7 +39,7 @@ html {
 }
 
 .workflow-node {
-  animation: workflow-node-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: workflow-node-enter 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-origin: top left;
   transition:
     border-color 180ms ease,
@@ -64,7 +64,7 @@ html {
 }
 
 .workflow-edge {
-  animation: workflow-edge-draw 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: workflow-edge-draw 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 }

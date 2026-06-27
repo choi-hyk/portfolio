@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import type { Project } from "@/data/projects";
 
 type ProjectCardProps = {
@@ -28,14 +29,13 @@ export function ProjectCard({ project, variant = "light" }: ProjectCardProps) {
           >
             {project.type}
           </p>
-          <h2
-            className={
-              isDark
-                ? "mt-2 text-xl font-semibold text-zinc-950"
-                : "mt-2 text-xl font-semibold text-zinc-950"
-            }
-          >
-            {project.title}
+          <h2 className="mt-2 text-xl font-semibold text-zinc-950">
+            <Link
+              href={`/projects/${project.slug}`}
+              className="transition hover:text-teal-800"
+            >
+              {project.title}
+            </Link>
           </h2>
         </div>
         <a

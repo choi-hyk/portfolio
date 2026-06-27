@@ -8,7 +8,8 @@ type Writing = {
   href: string;
 };
 
-type Experience = {
+export type Experience = {
+  slug: string;
   company: string;
   role: string;
   period: string;
@@ -22,7 +23,7 @@ type SkillGroup = {
   items: string[];
 };
 
-type Dictionary = {
+export type Dictionary = {
   profile: {
     name: string;
     role: string;
@@ -34,13 +35,18 @@ type Dictionary = {
     };
   };
   nav: {
-    about: string;
+    portfolio: string;
+    overview: string;
     experience: string;
     projects: string;
     writing: string;
     openSource: string;
     skills: string;
-    contact: string;
+    external: string;
+    pagesLabel: string;
+    collapsedLabel: string;
+    expandSidebar: string;
+    collapseSidebar: string;
   };
   home: {
     eyebrow: string;
@@ -133,13 +139,18 @@ export const dictionaries: Record<Locale, Dictionary> = {
       },
     },
     nav: {
-      about: "About",
+      portfolio: "Portfolio",
+      overview: "Overview",
       experience: "Experience",
       projects: "Projects",
-      writing: "Writing",
+      writing: "Technical Writing",
       openSource: "Open Source",
       skills: "Skills",
-      contact: "Contact",
+      external: "External",
+      pagesLabel: "Portfolio pages",
+      collapsedLabel: "Collapsed portfolio navigation",
+      expandSidebar: "사이드바 열기",
+      collapseSidebar: "사이드바 닫기",
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
@@ -213,6 +224,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       title: "실무 경험",
       items: [
         {
+          slug: "synapsoft",
           company: "Synapsoft",
           role: "Backend / AI Application Developer",
           period: "2025.08 - Present",
@@ -374,13 +386,18 @@ export const dictionaries: Record<Locale, Dictionary> = {
       },
     },
     nav: {
-      about: "About",
+      portfolio: "Portfolio",
+      overview: "Overview",
       experience: "Experience",
       projects: "Projects",
-      writing: "Writing",
+      writing: "Technical Writing",
       openSource: "Open Source",
       skills: "Skills",
-      contact: "Contact",
+      external: "External",
+      pagesLabel: "Portfolio pages",
+      collapsedLabel: "Collapsed portfolio navigation",
+      expandSidebar: "Expand sidebar",
+      collapseSidebar: "Collapse sidebar",
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
@@ -454,6 +471,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       title: "Work experience",
       items: [
         {
+          slug: "synapsoft",
           company: "Synapsoft",
           role: "Backend / AI Application Developer",
           period: "2025.08 - Present",

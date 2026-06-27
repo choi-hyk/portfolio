@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Tooltip } from "@/components/tooltip";
 
 type CanvasPoint = {
   x: number;
@@ -65,9 +66,9 @@ const CANVAS_SIZE = {
   width: 2000,
   height: 1400,
 };
-const NODE_REVEAL_STEP_MS = 360;
-const EDGE_REVEAL_STEP_MS = 180;
-const EDGE_REVEAL_OFFSET_MS = 520;
+const NODE_REVEAL_STEP_MS = 260;
+const EDGE_REVEAL_STEP_MS = 120;
+const EDGE_REVEAL_OFFSET_MS = 320;
 
 export function WorkflowCanvas({
   label,
@@ -367,35 +368,39 @@ function CanvasStepControls({
 
   return (
     <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-teal-200 bg-white/90 px-2 py-1.5 shadow-md shadow-teal-900/10 backdrop-blur">
-      <button
-        type="button"
-        aria-label="Focus previous node"
-        aria-disabled={isPreviousDisabled}
-        onClick={() => {
-          if (!isPreviousDisabled) {
-            onPrevious();
-          }
-        }}
-        className={`${buttonClass} ${isPreviousDisabled ? disabledClass : enabledClass}`}
-      >
-        <span aria-hidden="true">←</span>
-      </button>
+      <Tooltip content="Previous node" placement="top">
+        <button
+          type="button"
+          aria-label="Focus previous node"
+          aria-disabled={isPreviousDisabled}
+          onClick={() => {
+            if (!isPreviousDisabled) {
+              onPrevious();
+            }
+          }}
+          className={`${buttonClass} ${isPreviousDisabled ? disabledClass : enabledClass}`}
+        >
+          <span aria-hidden="true">←</span>
+        </button>
+      </Tooltip>
       <span className="min-w-12 text-center text-xs font-medium text-zinc-500">
         {currentIndex + 1}/{total}
       </span>
-      <button
-        type="button"
-        aria-label="Focus next node"
-        aria-disabled={isNextDisabled}
-        onClick={() => {
-          if (!isNextDisabled) {
-            onNext();
-          }
-        }}
-        className={`${buttonClass} ${isNextDisabled ? disabledClass : enabledClass}`}
-      >
-        <span aria-hidden="true">→</span>
-      </button>
+      <Tooltip content="Next node" placement="top">
+        <button
+          type="button"
+          aria-label="Focus next node"
+          aria-disabled={isNextDisabled}
+          onClick={() => {
+            if (!isNextDisabled) {
+              onNext();
+            }
+          }}
+          className={`${buttonClass} ${isNextDisabled ? disabledClass : enabledClass}`}
+        >
+          <span aria-hidden="true">→</span>
+        </button>
+      </Tooltip>
     </div>
   );
 }
