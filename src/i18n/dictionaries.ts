@@ -70,7 +70,6 @@ export type Dictionary = {
     profileCard: {
       koreanName: string;
       englishName: string;
-      role: string;
       experiences: Array<{
         icon: "school" | "company";
         title: string;
@@ -181,7 +180,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
-      title: "AI를 활용하는 방식을 설계하는 엔지니어",
+      title: "AI 활용 방식을 설계하는 개발자",
       subtitle:
         "저는 AI를 소비하는 개발자가 아니라, AI를 개발 방식으로 만드는 개발자가 되고자 합니다.",
       slogan: {
@@ -189,8 +188,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         body: "하지만 AI 시대의 개발 역량은 새로운 서비스를 만드는 데만 있지 않습니다.",
         action:
           "새로운 기술을 빠르게 이해하고, 검증하고, 기존 개발 환경에 적용하는 것.",
-        closing: "AI를 사용하는 개발자가 아니라, AI와 함께 개발하는 개발자.",
-        final: "이것이 제가 추구하는 AI 시대의 개발자입니다.",
+        closing: "AI를 단순히 사용하는 데서 멈추지 않고, AI와 함께 문제를 해결하는 것.",
+        final: "그것이 제가 추구하는 AI 시대의 개발 역량입니다.",
       },
       canvas: {
         previousNode: "이전 노드",
@@ -203,7 +202,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
       profileCard: {
         koreanName: "최혁",
         englishName: "CHOI HYUK",
-        role: "Backend / AI Application Developer",
         experiences: [
           {
             icon: "school",
@@ -464,7 +462,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
-      title: "Engineering How AI Is Applied",
+      title: "A Developer Designing How AI Is Applied",
       subtitle:
         "I aim to be a developer who turns AI into a development practice, not just a developer who consumes AI.",
       slogan: {
@@ -473,8 +471,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         action:
           "It is about quickly understanding new technologies, validating them, and applying them to existing development environments.",
         closing:
-          "Not a developer who only uses AI, but a developer who builds with AI.",
-        final: "That is the developer I aim to become in the AI era.",
+          "Not stopping at simply using AI, but solving problems together with AI.",
+        final: "That is the development capability I pursue in the AI era.",
       },
       canvas: {
         previousNode: "Previous node",
@@ -487,7 +485,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
       profileCard: {
         koreanName: "최혁",
         englishName: "CHOI HYUK",
-        role: "Backend / AI Application Developer",
         experiences: [
           {
             icon: "school",

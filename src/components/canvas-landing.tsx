@@ -33,7 +33,6 @@ type CanvasLandingProps = {
     profileCard: {
       koreanName: string;
       englishName: string;
-      role: string;
       experiences: Array<{
         icon: "school" | "company";
         title: string;
@@ -101,13 +100,11 @@ export function CanvasLanding({ home }: CanvasLandingProps) {
     {
       id: "profile",
       kind: "note",
-      x: 45,
+      x: 50,
       y: 10,
       width: 26,
       markdown: [
         `## ${home.profileCard.koreanName} ${home.profileCard.englishName}`,
-        home.profileCard.role,
-        "",
         ...home.profileCard.experiences.map(
           (experience) =>
             `- :${experience.icon}: **${experience.title}** / ${experience.detail} / ${experience.period}`,
