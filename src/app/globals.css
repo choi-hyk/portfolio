@@ -69,6 +69,15 @@ html {
   stroke-dashoffset: 1;
 }
 
+.workflow-edge-directed {
+  color: #0f766e;
+}
+
+.workflow-edge-undirected {
+  color: #0e7490;
+  stroke-dasharray: 0.035 0.025;
+}
+
 @media (min-width: 768px) {
   .workflow-canvas {
     height: 100vh;

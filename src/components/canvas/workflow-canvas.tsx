@@ -5,6 +5,7 @@ import {
   type PointerEvent,
   type ReactNode,
   type WheelEvent,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -26,13 +27,20 @@ export type CanvasNode = {
   width: number;
 };
 
+export type CanvasNodeSide = "top" | "right" | "bottom" | "left";
+
+type CanvasEdgeEndpoint = {
+  nodeId: string;
+  side: CanvasNodeSide;
+};
+
+type CanvasNodeHeights = Record<string, number>;
+
 export type CanvasEdge = {
   id: string;
-  from: string;
-  to: string;
+  from: CanvasEdgeEndpoint;
+  to: CanvasEdgeEndpoint;
   directed?: boolean;
-  fromPoint: CanvasPoint;
-  toPoint: CanvasPoint;
 };
 
 export type CanvasShell = {
@@ -80,6 +88,7 @@ export function WorkflowCanvas({
   const [isPanning, setIsPanning] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ width: 1, height: 1 });
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [nodeHeights, setNodeHeights] = useState<CanvasNodeHeights>({});
   const boundedPan = clampPan(pan, canvasSize, occludedLeft);
   const nodeAnimationOrder = getTopLeftRenderOrder(nodes);
   const orderedNodes = getTopLeftOrderedNodes(nodes);
@@ -108,6 +117,12 @@ export function WorkflowCanvas({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
+  }, []);
+
+  const handleNodeResize = useCallback((nodeId: string, height: number) => {
+    setNodeHeights((current) =>
+      current[nodeId] === height ? current : { ...current, [nodeId]: height },
+    );
   }, []);
 
   useEffect(() => {
@@ -160,7 +175,7 @@ export function WorkflowCanvas({
 
     setPan(nextPan);
     setSelectedNodeId(
-      getViewportFocusedNodeId(nodes, nextPan, canvasSize, occludedLeft),
+      getViewportFocusedNodeId(nodes, nextPan, canvasSize, occludedLeft, nodeHeights),
     );
   };
 
@@ -186,7 +201,7 @@ export function WorkflowCanvas({
       );
 
       setSelectedNodeId(
-        getViewportFocusedNodeId(nodes, nextPan, canvasSize, occludedLeft),
+        getViewportFocusedNodeId(nodes, nextPan, canvasSize, occludedLeft, nodeHeights),
       );
 
       return nextPan;
@@ -204,7 +219,13 @@ export function WorkflowCanvas({
 
     setPan(boundedNextPan);
     setSelectedNodeId(
-      getViewportFocusedNodeId(nodes, boundedNextPan, canvasSize, occludedLeft),
+      getViewportFocusedNodeId(
+        nodes,
+        boundedNextPan,
+        canvasSize,
+        occludedLeft,
+        nodeHeights,
+      ),
     );
   };
   const handleNodeFocus = (node: CanvasNode) => {
@@ -212,7 +233,7 @@ export function WorkflowCanvas({
       return;
     }
 
-    const nodeBox = getNodeBox(node);
+    const nodeBox = getNodeBox(node, nodeHeights);
     const nodeCenter = {
       x: nodeBox.x + nodeBox.width / 2,
       y: nodeBox.y + nodeBox.height / 2,
@@ -228,7 +249,13 @@ export function WorkflowCanvas({
   const handleStepFocus = (direction: "previous" | "next") => {
     const currentNodeId =
       selectedNodeId ??
-      getViewportFocusedNodeId(nodes, boundedPan, canvasSize, occludedLeft) ??
+      getViewportFocusedNodeId(
+        nodes,
+        boundedPan,
+        canvasSize,
+        occludedLeft,
+        nodeHeights,
+      ) ??
       orderedNodes[0]?.id;
     const currentIndex = orderedNodes.findIndex((node) => node.id === currentNodeId);
     const fallbackIndex = currentIndex >= 0 ? currentIndex : 0;
@@ -277,6 +304,7 @@ export function WorkflowCanvas({
         <CanvasEdges
           edges={edges}
           nodes={nodes}
+          nodeHeights={nodeHeights}
           animationBaseDelay={edgeAnimationBaseDelay}
         />
 
@@ -289,6 +317,7 @@ export function WorkflowCanvas({
               animationOrder={nodeAnimationOrder.get(node.id) ?? 0}
               selected={selectedNodeId === node.id}
               onFocus={() => handleNodeFocus(node)}
+              onResize={handleNodeResize}
             />
           ))}
         </div>
@@ -296,6 +325,7 @@ export function WorkflowCanvas({
 
       <CanvasMiniMap
         nodes={nodes}
+        nodeHeights={nodeHeights}
         pan={boundedPan}
         viewportSize={canvasSize}
         canvasSize={CANVAS_SIZE}
@@ -372,6 +402,7 @@ function CanvasStepControls({
 
 type CanvasMiniMapProps = {
   nodes: CanvasNode[];
+  nodeHeights: CanvasNodeHeights;
   pan: CanvasPoint;
   viewportSize: {
     width: number;
@@ -387,6 +418,7 @@ type CanvasMiniMapProps = {
 
 function CanvasMiniMap({
   nodes,
+  nodeHeights,
   pan,
   viewportSize,
   canvasSize,
@@ -465,7 +497,9 @@ function CanvasMiniMap({
             x={node.x}
             y={node.y}
             width={node.width}
-            height={node.kind === "code" ? 16 : 13}
+            height={
+              ((nodeHeights[node.id] ?? getNodeHeight(node)) / CANVAS_SIZE.height) * 100
+            }
             rx="2"
             className={
               node.kind === "mention"
@@ -492,10 +526,16 @@ function CanvasMiniMap({
 type CanvasEdgesProps = {
   edges: CanvasEdge[];
   nodes: CanvasNode[];
+  nodeHeights: CanvasNodeHeights;
   animationBaseDelay: number;
 };
 
-function CanvasEdges({ edges, nodes, animationBaseDelay }: CanvasEdgesProps) {
+function CanvasEdges({
+  edges,
+  nodes,
+  nodeHeights,
+  animationBaseDelay,
+}: CanvasEdgesProps) {
   return (
     <svg
       aria-hidden="true"
@@ -505,35 +545,45 @@ function CanvasEdges({ edges, nodes, animationBaseDelay }: CanvasEdgesProps) {
       <defs>
         <marker
           id="canvas-arrow"
-          markerHeight="6"
-          markerWidth="6"
+          markerHeight="10"
+          markerUnits="userSpaceOnUse"
+          markerWidth="10"
           orient="auto"
-          refX="5"
-          refY="3"
+          refX="9"
+          refY="5"
         >
-          <path d="M0,0 L6,3 L0,6 Z" className="fill-current" />
+          <path d="M0,0 L10,5 L0,10 Z" className="fill-current" />
         </marker>
       </defs>
       {edges.map((edge, index) => {
-        const fromNode = nodes.find((node) => node.id === edge.from);
-        const toNode = nodes.find((node) => node.id === edge.to);
+        const fromNode = nodes.find((node) => node.id === edge.from.nodeId);
+        const toNode = nodes.find((node) => node.id === edge.to.nodeId);
 
         if (!fromNode || !toNode) {
           return null;
         }
 
-        const path = getEdgePath(fromNode, toNode);
+        const path = getEdgePath(
+          fromNode,
+          edge.from.side,
+          toNode,
+          edge.to.side,
+          nodeHeights,
+        );
 
         return (
           <path
             key={edge.id}
             d={path}
-            className="workflow-edge fill-none"
+            className={[
+              "workflow-edge fill-none",
+              edge.directed ? "workflow-edge-directed" : "workflow-edge-undirected",
+            ].join(" ")}
             markerEnd={edge.directed ? "url(#canvas-arrow)" : undefined}
             stroke="currentColor"
             pathLength={1}
             strokeLinecap="round"
-            strokeWidth="0.42"
+            strokeWidth="2"
             style={{
               animationDelay: `${animationBaseDelay + index * EDGE_REVEAL_STEP_MS}ms`,
             }}
@@ -545,34 +595,30 @@ function CanvasEdges({ edges, nodes, animationBaseDelay }: CanvasEdgesProps) {
   );
 }
 
-function getEdgePath(fromNode: CanvasNode, toNode: CanvasNode) {
-  const fromBox = getNodeBox(fromNode);
-  const toBox = getNodeBox(toNode);
-  const fromCenter = {
-    x: fromBox.x + fromBox.width / 2,
-    y: fromBox.y + fromBox.height / 2,
-  };
-  const toCenter = {
-    x: toBox.x + toBox.width / 2,
-    y: toBox.y + toBox.height / 2,
-  };
-  const fromRightToLeft = fromCenter.x <= toCenter.x;
-  const start = {
-    x: fromRightToLeft ? fromBox.x + fromBox.width : fromBox.x,
-    y: fromCenter.y,
-  };
-  const end = {
-    x: fromRightToLeft ? toBox.x : toBox.x + toBox.width,
-    y: toCenter.y,
-  };
-  const controlDistance = Math.max(120, Math.abs(end.x - start.x) * 0.45);
+function getEdgePath(
+  fromNode: CanvasNode,
+  fromSide: CanvasNodeSide,
+  toNode: CanvasNode,
+  toSide: CanvasNodeSide,
+  nodeHeights: CanvasNodeHeights,
+) {
+  const fromBox = getNodeBox(fromNode, nodeHeights);
+  const toBox = getNodeBox(toNode, nodeHeights);
+  const start = getNodeAnchor(fromBox, fromSide);
+  const end = getNodeAnchor(toBox, toSide);
+  const controlDistance = Math.max(
+    80,
+    Math.hypot(end.x - start.x, end.y - start.y) * 0.35,
+  );
+  const fromDirection = getSideDirection(fromSide);
+  const toDirection = getSideDirection(toSide);
   const firstControl = {
-    x: start.x + (fromRightToLeft ? controlDistance : -controlDistance),
-    y: start.y,
+    x: start.x + fromDirection.x * controlDistance,
+    y: start.y + fromDirection.y * controlDistance,
   };
   const secondControl = {
-    x: end.x + (fromRightToLeft ? -controlDistance : controlDistance),
-    y: end.y,
+    x: end.x + toDirection.x * controlDistance,
+    y: end.y + toDirection.y * controlDistance,
   };
 
   return [
@@ -581,12 +627,36 @@ function getEdgePath(fromNode: CanvasNode, toNode: CanvasNode) {
   ].join(" ");
 }
 
-function getNodeBox(node: CanvasNode) {
+function getNodeAnchor(
+  box: ReturnType<typeof getNodeBox>,
+  side: CanvasNodeSide,
+): CanvasPoint {
+  const centerX = box.x + box.width / 2;
+  const centerY = box.y + box.height / 2;
+
+  return {
+    top: { x: centerX, y: box.y },
+    right: { x: box.x + box.width, y: centerY },
+    bottom: { x: centerX, y: box.y + box.height },
+    left: { x: box.x, y: centerY },
+  }[side];
+}
+
+function getSideDirection(side: CanvasNodeSide): CanvasPoint {
+  return {
+    top: { x: 0, y: -1 },
+    right: { x: 1, y: 0 },
+    bottom: { x: 0, y: 1 },
+    left: { x: -1, y: 0 },
+  }[side];
+}
+
+function getNodeBox(node: CanvasNode, nodeHeights: CanvasNodeHeights = {}) {
   return {
     x: (node.x / 100) * CANVAS_SIZE.width,
     y: (node.y / 100) * CANVAS_SIZE.height,
     width: (node.width / 100) * CANVAS_SIZE.width,
-    height: getNodeHeight(node),
+    height: nodeHeights[node.id] ?? getNodeHeight(node),
   };
 }
 
@@ -612,6 +682,7 @@ type MarkdownNodeProps = {
   animationOrder: number;
   selected: boolean;
   onFocus: () => void;
+  onResize: (nodeId: string, height: number) => void;
 };
 
 function MarkdownNode({
@@ -620,7 +691,9 @@ function MarkdownNode({
   animationOrder,
   selected,
   onFocus,
+  onResize,
 }: MarkdownNodeProps) {
+  const nodeRef = useRef<HTMLElement>(null);
   const variant = {
     note: "border-t-4 border-t-teal-500 bg-white",
     code: "border-t-4 border-t-zinc-700 bg-zinc-950 text-zinc-100",
@@ -628,8 +701,25 @@ function MarkdownNode({
     mention: "border-t-4 border-t-emerald-500 bg-emerald-50",
   }[node.kind];
 
+  useEffect(() => {
+    const element = nodeRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const reportHeight = () => onResize(node.id, element.offsetHeight);
+    const observer = new ResizeObserver(reportHeight);
+
+    reportHeight();
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [node.id, onResize]);
+
   return (
     <article
+      ref={nodeRef}
       role="button"
       tabIndex={0}
       aria-label={`Focus ${node.id} node`}
@@ -901,13 +991,9 @@ function getTopLeftRenderOrder(nodes: CanvasNode[]) {
 
 function getTopLeftOrderedNodes(nodes: CanvasNode[]) {
   return [...nodes].sort((a, b) => {
-    const diagonal = a.x + a.y - (b.x + b.y);
+    const diagonalOrder = a.x + a.y - (b.x + b.y);
 
-    if (Math.abs(diagonal) > 6) {
-      return diagonal;
-    }
-
-    return a.x - b.x;
+    return diagonalOrder || a.y - b.y || a.x - b.x;
   });
 }
 
@@ -916,6 +1002,7 @@ function getViewportFocusedNodeId(
   pan: CanvasPoint,
   viewportSize: { width: number; height: number },
   occludedLeft: number,
+  nodeHeights: CanvasNodeHeights,
 ) {
   const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
   const effectiveWidth = Math.max(1, viewportSize.width - effectiveLeft);
@@ -926,7 +1013,7 @@ function getViewportFocusedNodeId(
 
   return [...nodes]
     .map((node) => {
-      const box = getNodeBox(node);
+      const box = getNodeBox(node, nodeHeights);
       const center = {
         x: box.x + box.width / 2,
         y: box.y + box.height / 2,
