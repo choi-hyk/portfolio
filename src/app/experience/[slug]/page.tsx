@@ -17,9 +17,8 @@ export default async function ExperienceDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const experience = getDictionary(defaultLocale).experience.items.find(
-    (item) => item.slug === slug,
-  );
+  const dictionary = getDictionary(defaultLocale);
+  const experience = dictionary.experience.items.find((item) => item.slug === slug);
 
   if (!experience) {
     notFound();
@@ -27,7 +26,10 @@ export default async function ExperienceDetailPage({
 
   return (
     <main className="min-h-screen bg-white text-zinc-700">
-      <ExperienceDetailCanvas experience={experience} />
+      <ExperienceDetailCanvas
+        experience={experience}
+        canvasLabels={dictionary.home.canvas}
+      />
     </main>
   );
 }

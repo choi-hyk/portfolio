@@ -1,6 +1,7 @@
 import {
   type CanvasEdge,
   type CanvasNode,
+  type WorkflowCanvasLabels,
   WorkflowCanvas,
 } from "@/components/canvas/workflow-canvas";
 import type { Project } from "@/data/projects";
@@ -45,13 +46,18 @@ const detailEdges: CanvasEdge[] = [
 
 type ProjectDetailCanvasProps = {
   project: Project;
+  canvasLabels: WorkflowCanvasLabels;
 };
 
 type ProjectOverviewCanvasProps = {
   projects: Project[];
+  canvasLabels: WorkflowCanvasLabels;
 };
 
-export function ProjectOverviewCanvas({ projects }: ProjectOverviewCanvasProps) {
+export function ProjectOverviewCanvas({
+  projects,
+  canvasLabels,
+}: ProjectOverviewCanvasProps) {
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 3);
   const positions = [
     { x: 53, y: 7, width: 30 },
@@ -134,11 +140,15 @@ export function ProjectOverviewCanvas({ projects }: ProjectOverviewCanvasProps) 
       nodes={nodes}
       edges={edges}
       shell={canvasShell}
+      labels={canvasLabels}
     />
   );
 }
 
-export function ProjectDetailCanvas({ project }: ProjectDetailCanvasProps) {
+export function ProjectDetailCanvas({
+  project,
+  canvasLabels,
+}: ProjectDetailCanvasProps) {
   const nodes: CanvasNode[] = [
     {
       id: "summary",
@@ -200,20 +210,24 @@ export function ProjectDetailCanvas({ project }: ProjectDetailCanvasProps) {
       nodes={nodes}
       edges={detailEdges}
       shell={canvasShell}
+      labels={canvasLabels}
     />
   );
 }
 
 type ExperienceDetailCanvasProps = {
   experience: Experience;
+  canvasLabels: WorkflowCanvasLabels;
 };
 
 type ExperienceOverviewCanvasProps = {
   experiences: Experience[];
+  canvasLabels: WorkflowCanvasLabels;
 };
 
 export function ExperienceOverviewCanvas({
   experiences,
+  canvasLabels,
 }: ExperienceOverviewCanvasProps) {
   const primaryExperience = experiences[0];
   const nodes: CanvasNode[] = [
@@ -283,11 +297,15 @@ export function ExperienceOverviewCanvas({
       nodes={nodes}
       edges={detailEdges}
       shell={canvasShell}
+      labels={canvasLabels}
     />
   );
 }
 
-export function ExperienceDetailCanvas({ experience }: ExperienceDetailCanvasProps) {
+export function ExperienceDetailCanvas({
+  experience,
+  canvasLabels,
+}: ExperienceDetailCanvasProps) {
   const nodes: CanvasNode[] = [
     {
       id: "summary",
@@ -348,6 +366,7 @@ export function ExperienceDetailCanvas({ experience }: ExperienceDetailCanvasPro
       nodes={nodes}
       edges={detailEdges}
       shell={canvasShell}
+      labels={canvasLabels}
     />
   );
 }

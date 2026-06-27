@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Building2, Code2, GraduationCap } from "lucide-react";
 import { Tooltip } from "@/components/tooltip";
 
 type CanvasPoint = {
@@ -22,6 +23,7 @@ export type CanvasNodeKind = "note" | "code" | "mermaid" | "mention";
 export type CanvasNode = {
   id: string;
   kind: CanvasNodeKind;
+  appearance?: "default" | "transparent";
   markdown: string;
   x: number;
   y: number;
@@ -54,11 +56,21 @@ export type CanvasShell = {
   strong: string;
 };
 
+export type WorkflowCanvasLabels = {
+  previousNode: string;
+  nextNode: string;
+  focusPreviousNode: string;
+  focusNextNode: string;
+  moveViewport: string;
+  focusNode: string;
+};
+
 type WorkflowCanvasProps = {
   label: string;
   nodes: CanvasNode[];
   edges: CanvasEdge[];
   shell: CanvasShell;
+  labels?: WorkflowCanvasLabels;
   occludedLeft?: number;
 };
 
@@ -69,12 +81,21 @@ const CANVAS_SIZE = {
 const NODE_REVEAL_STEP_MS = 260;
 const EDGE_REVEAL_STEP_MS = 120;
 const EDGE_REVEAL_OFFSET_MS = 320;
+const defaultCanvasLabels: WorkflowCanvasLabels = {
+  previousNode: "Previous node",
+  nextNode: "Next node",
+  focusPreviousNode: "Focus previous node",
+  focusNextNode: "Focus next node",
+  moveViewport: "Move canvas viewport",
+  focusNode: "Focus {node} node",
+};
 
 export function WorkflowCanvas({
   label,
   nodes,
   edges,
   shell,
+  labels = defaultCanvasLabels,
   occludedLeft = 0,
 }: WorkflowCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -319,6 +340,7 @@ export function WorkflowCanvas({
               selected={selectedNodeId === node.id}
               onFocus={() => handleNodeFocus(node)}
               onResize={handleNodeResize}
+              labels={labels}
             />
           ))}
         </div>
@@ -332,6 +354,7 @@ export function WorkflowCanvas({
         canvasSize={CANVAS_SIZE}
         occludedLeft={occludedLeft}
         onNavigate={handleMiniMapNavigate}
+        labels={labels}
       />
       <CanvasStepControls
         currentIndex={Math.max(
@@ -341,6 +364,7 @@ export function WorkflowCanvas({
         total={orderedNodes.length}
         onPrevious={() => handleStepFocus("previous")}
         onNext={() => handleStepFocus("next")}
+        labels={labels}
       />
     </div>
   );
@@ -351,6 +375,7 @@ type CanvasStepControlsProps = {
   total: number;
   onPrevious: () => void;
   onNext: () => void;
+  labels: WorkflowCanvasLabels;
 };
 
 function CanvasStepControls({
@@ -358,6 +383,7 @@ function CanvasStepControls({
   total,
   onPrevious,
   onNext,
+  labels,
 }: CanvasStepControlsProps) {
   const isPreviousDisabled = currentIndex <= 0;
   const isNextDisabled = currentIndex >= total - 1;
@@ -368,10 +394,10 @@ function CanvasStepControls({
 
   return (
     <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-teal-200 bg-white/90 px-2 py-1.5 shadow-md shadow-teal-900/10 backdrop-blur">
-      <Tooltip content="Previous node" placement="top">
+      <Tooltip content={labels.previousNode} placement="top">
         <button
           type="button"
-          aria-label="Focus previous node"
+          aria-label={labels.focusPreviousNode}
           aria-disabled={isPreviousDisabled}
           onClick={() => {
             if (!isPreviousDisabled) {
@@ -386,10 +412,10 @@ function CanvasStepControls({
       <span className="min-w-12 text-center text-xs font-medium text-zinc-500">
         {currentIndex + 1}/{total}
       </span>
-      <Tooltip content="Next node" placement="top">
+      <Tooltip content={labels.nextNode} placement="top">
         <button
           type="button"
-          aria-label="Focus next node"
+          aria-label={labels.focusNextNode}
           aria-disabled={isNextDisabled}
           onClick={() => {
             if (!isNextDisabled) {
@@ -419,6 +445,7 @@ type CanvasMiniMapProps = {
   };
   occludedLeft: number;
   onNavigate: (point: CanvasPoint) => void;
+  labels: WorkflowCanvasLabels;
 };
 
 function CanvasMiniMap({
@@ -429,6 +456,7 @@ function CanvasMiniMap({
   canvasSize,
   occludedLeft,
   onNavigate,
+  labels,
 }: CanvasMiniMapProps) {
   const miniMapRef = useRef<HTMLDivElement>(null);
   const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
@@ -463,7 +491,7 @@ function CanvasMiniMap({
       ref={miniMapRef}
       role="button"
       tabIndex={0}
-      aria-label="Move canvas viewport"
+      aria-label={labels.moveViewport}
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         navigate(event.clientX, event.clientY);
@@ -688,6 +716,7 @@ type MarkdownNodeProps = {
   selected: boolean;
   onFocus: () => void;
   onResize: (nodeId: string, height: number) => void;
+  labels: WorkflowCanvasLabels;
 };
 
 function MarkdownNode({
@@ -697,6 +726,7 @@ function MarkdownNode({
   selected,
   onFocus,
   onResize,
+  labels,
 }: MarkdownNodeProps) {
   const nodeRef = useRef<HTMLElement>(null);
   const variant = {
@@ -705,6 +735,10 @@ function MarkdownNode({
     mermaid: "border-t-4 border-t-sky-500 bg-sky-50/70",
     mention: "border-t-4 border-t-emerald-500 bg-emerald-50",
   }[node.kind];
+  const appearance =
+    node.appearance === "transparent"
+      ? "border-transparent bg-transparent p-0 shadow-none backdrop-blur-0"
+      : `rounded-md border border-zinc-200 p-4 shadow-md shadow-zinc-900/8 backdrop-blur ${variant}`;
 
   useEffect(() => {
     const element = nodeRef.current;
@@ -727,7 +761,8 @@ function MarkdownNode({
       ref={nodeRef}
       role="button"
       tabIndex={0}
-      aria-label={`Focus ${node.id} node`}
+      aria-label={labels.focusNode.replace("{node}", node.id)}
+      data-appearance={node.appearance ?? "default"}
       data-selected={selected}
       onClick={onFocus}
       onKeyDown={(event) => {
@@ -736,7 +771,7 @@ function MarkdownNode({
           onFocus();
         }
       }}
-      className={`workflow-node rounded-md border border-zinc-200 p-4 shadow-md shadow-zinc-900/8 backdrop-blur ${variant}`}
+      className={`workflow-node ${appearance}`}
       style={
         {
           left: `${node.x}%`,
@@ -746,7 +781,12 @@ function MarkdownNode({
         } as CSSProperties
       }
     >
-      <MarkdownBody markdown={node.markdown} kind={node.kind} shell={shell} />
+      <MarkdownBody
+        markdown={node.markdown}
+        kind={node.kind}
+        shell={shell}
+        appearance={node.appearance ?? "default"}
+      />
     </article>
   );
 }
@@ -755,13 +795,20 @@ type MarkdownBodyProps = {
   markdown: string;
   kind: CanvasNodeKind;
   shell: CanvasShell;
+  appearance: NonNullable<CanvasNode["appearance"]>;
 };
 
-function MarkdownBody({ markdown, kind, shell }: MarkdownBodyProps) {
+function MarkdownBody({ markdown, kind, shell, appearance }: MarkdownBodyProps) {
   const blocks = parseMarkdown(markdown);
 
   return (
-    <div className="space-y-3 text-sm leading-6">
+    <div
+      className={
+        appearance === "transparent"
+          ? "space-y-2 text-base leading-7"
+          : "space-y-3 text-sm leading-6"
+      }
+    >
       {blocks.map((block, index) => {
         if (block.type === "heading") {
           const Heading = block.level === 1 ? "h2" : "h3";
@@ -769,9 +816,9 @@ function MarkdownBody({ markdown, kind, shell }: MarkdownBodyProps) {
           return (
             <Heading
               key={`${block.raw}-${index}`}
-              className={`font-semibold tracking-tight ${
-                block.level === 1 ? "text-xl" : "text-base"
-              } ${kind === "code" ? "text-white" : shell.strong}`}
+              className={`font-semibold tracking-tight ${getHeadingSize(block.level, appearance)} ${
+                kind === "code" ? "text-white" : shell.strong
+              }`}
             >
               {renderInline(block.text, shell, kind)}
             </Heading>
@@ -779,6 +826,35 @@ function MarkdownBody({ markdown, kind, shell }: MarkdownBodyProps) {
         }
 
         if (block.type === "list") {
+          if (
+            block.items.some(
+              (item) =>
+                item.startsWith(":school:") ||
+                item.startsWith(":company:") ||
+                item.startsWith(":stack:"),
+            )
+          ) {
+            return (
+              <ul key={`${block.raw}-${index}`} className="space-y-2">
+                {block.items.map((item) => (
+                  <li key={item} className="flex min-h-6 items-center gap-2">
+                    {renderInline(item, shell, kind)}
+                  </li>
+                ))}
+              </ul>
+            );
+          }
+
+          if (block.items.every((item) => item.startsWith("`"))) {
+            return (
+              <ul key={`${block.raw}-${index}`} className="flex flex-wrap gap-2">
+                {block.items.map((item) => (
+                  <li key={item}>{renderInline(item, shell, kind)}</li>
+                ))}
+              </ul>
+            );
+          }
+
           return (
             <ul key={`${block.raw}-${index}`} className="space-y-1">
               {block.items.map((item) => (
@@ -794,6 +870,28 @@ function MarkdownBody({ markdown, kind, shell }: MarkdownBodyProps) {
         }
 
         if (block.type === "code") {
+          if (block.language === "profile") {
+            const [initials = "", caption = "", meta = ""] = block.text
+              .split("\n")
+              .map((line) => line.trim())
+              .filter(Boolean);
+
+            return (
+              <div
+                key={`${block.raw}-${index}`}
+                className="flex items-center gap-4 rounded-md border border-teal-100 bg-teal-50/70 p-4"
+              >
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-teal-200 bg-white font-mono text-xl font-semibold text-teal-800">
+                  {initials}
+                </div>
+                <div>
+                  <p className={`text-sm font-medium ${shell.strong}`}>{caption}</p>
+                  <p className={`mt-1 text-xs ${shell.muted}`}>{meta}</p>
+                </div>
+              </div>
+            );
+          }
+
           return (
             <pre
               key={`${block.raw}-${index}`}
@@ -832,7 +930,7 @@ function MarkdownBody({ markdown, kind, shell }: MarkdownBodyProps) {
 type MarkdownBlock =
   | {
       type: "heading";
-      level: 1 | 2;
+      level: 1 | 2 | 3;
       text: string;
       raw: string;
     }
@@ -911,6 +1009,16 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
       return;
     }
 
+    if (line.startsWith("### ")) {
+      blocks.push({
+        type: "heading",
+        level: 3,
+        text: line.replace("### ", ""),
+        raw: line,
+      });
+      return;
+    }
+
     if (line.startsWith("## ")) {
       blocks.push({
         type: "heading",
@@ -931,14 +1039,55 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
   return blocks;
 }
 
+function getHeadingSize(
+  level: 1 | 2 | 3,
+  appearance: NonNullable<CanvasNode["appearance"]>,
+) {
+  if (level === 1) {
+    return appearance === "transparent"
+      ? "text-4xl leading-tight md:text-5xl"
+      : "text-xl";
+  }
+
+  if (level === 2) {
+    return "text-base";
+  }
+
+  return appearance === "transparent" ? "text-2xl leading-9 md:text-3xl" : "text-sm";
+}
+
 function renderInline(
   text: string,
   shell: CanvasShell,
   kind: CanvasNodeKind,
 ): ReactNode {
-  const parts = text.split(/(`[^`]+`|@\w[\w-]*)/g).filter(Boolean);
+  const parts = text
+    .split(/(\*\*[^*]+\*\*|`[^`]+`|@\w[\w-]*|:(?:school|company|stack):)/g)
+    .filter(Boolean);
 
   return parts.map((part, index) => {
+    if (part === ":school:" || part === ":company:" || part === ":stack:") {
+      const Icon =
+        part === ":school:" ? GraduationCap : part === ":company:" ? Building2 : Code2;
+
+      return (
+        <Icon
+          key={`${part}-${index}`}
+          aria-hidden="true"
+          size={15}
+          className={`mr-1.5 inline-block align-[-2px] ${shell.accent}`}
+        />
+      );
+    }
+
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={`${part}-${index}`} className="font-semibold">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+
     if (part.startsWith("`") && part.endsWith("`")) {
       return (
         <code

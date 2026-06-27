@@ -56,11 +56,21 @@ html {
   transform: translate3d(0, -3px, 0);
 }
 
+.workflow-node[data-appearance="transparent"]:hover {
+  border-color: transparent;
+  box-shadow: none;
+}
+
 .workflow-node[data-selected="true"] {
   border-color: #0f766e;
   box-shadow:
     0 20px 48px rgba(15, 118, 110, 0.18),
     0 0 0 2px rgba(20, 184, 166, 0.28);
+}
+
+.workflow-node[data-appearance="transparent"][data-selected="true"] {
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .workflow-edge {

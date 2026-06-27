@@ -7,7 +7,10 @@ export default function ExperiencePage() {
 
   return (
     <main className="min-h-screen bg-white text-zinc-700">
-      <ExperienceOverviewCanvas experiences={dictionary.experience.items} />
+      <ExperienceOverviewCanvas
+        experiences={dictionary.experience.items}
+        canvasLabels={dictionary.home.canvas}
+      />
     </main>
   );
 }

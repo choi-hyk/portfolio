@@ -52,6 +52,33 @@ export type Dictionary = {
     eyebrow: string;
     title: string;
     subtitle: string;
+    slogan: {
+      emphasis: string;
+      body: string;
+      action: string;
+      closing: string;
+      final: string;
+    };
+    canvas: {
+      previousNode: string;
+      nextNode: string;
+      focusPreviousNode: string;
+      focusNextNode: string;
+      moveViewport: string;
+      focusNode: string;
+    };
+    profileCard: {
+      koreanName: string;
+      englishName: string;
+      role: string;
+      experiences: Array<{
+        icon: "school" | "company";
+        title: string;
+        detail: string;
+        period: string;
+      }>;
+      skills: string[];
+    };
     primaryCta: string;
     secondaryCta: string;
     flow: Array<{
@@ -154,9 +181,45 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
-      title: "FastAPI와 AI 서비스를 실제 제품 구조로 연결하는 개발자",
+      title: "AI의 진화, 개발의 진화",
       subtitle:
-        "RAG/LLM 서비스, MCP 기반 지식 관리, 개발 자동화 도구를 만들며 실무와 개인 프로젝트를 연결하고 있습니다.",
+        "저는 AI를 소비하는 개발자가 아니라, AI를 개발 방식으로 만드는 개발자가 되고자 합니다.",
+      slogan: {
+        emphasis: "새로운 AI 서비스는 계속 등장합니다.",
+        body: "하지만 AI 시대의 개발 역량은 새로운 서비스를 만드는 데만 있지 않습니다.",
+        action:
+          "새로운 기술을 빠르게 이해하고, 검증하고, 기존 개발 환경에 적용하는 것.",
+        closing: "AI를 사용하는 개발자가 아니라, AI와 함께 개발하는 개발자.",
+        final: "이것이 제가 추구하는 AI 시대의 개발자입니다.",
+      },
+      canvas: {
+        previousNode: "이전 노드",
+        nextNode: "다음 노드",
+        focusPreviousNode: "이전 노드로 이동",
+        focusNextNode: "다음 노드로 이동",
+        moveViewport: "캔버스 보기 영역 이동",
+        focusNode: "{node} 노드로 이동",
+      },
+      profileCard: {
+        koreanName: "최혁",
+        englishName: "CHOI HYUK",
+        role: "Backend / AI Application Developer",
+        experiences: [
+          {
+            icon: "school",
+            title: "명지대학교",
+            detail: "컴퓨터공학과",
+            period: "2020 ~ 2026",
+          },
+          {
+            icon: "company",
+            title: "Synapsoft",
+            detail: "AI Application Developer",
+            period: "2025 ~ 2026",
+          },
+        ],
+        skills: ["FastAPI", "RAG", "MCP"],
+      },
       primaryCta: "핵심 프로젝트 보기",
       secondaryCta: "기술 기록 보기",
       flow: [
@@ -401,9 +464,46 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
-      title: "Connecting FastAPI and AI services into product-ready systems",
+      title: "AI evolves. Development evolves.",
       subtitle:
-        "I connect practical backend work with RAG/LLM services, MCP-powered knowledge tools, and developer automation.",
+        "I aim to be a developer who turns AI into a development practice, not just a developer who consumes AI.",
+      slogan: {
+        emphasis: "New AI services continue to emerge.",
+        body: "But development capability in the AI era is not only about creating new services.",
+        action:
+          "It is about quickly understanding new technologies, validating them, and applying them to existing development environments.",
+        closing:
+          "Not a developer who only uses AI, but a developer who builds with AI.",
+        final: "That is the developer I aim to become in the AI era.",
+      },
+      canvas: {
+        previousNode: "Previous node",
+        nextNode: "Next node",
+        focusPreviousNode: "Focus previous node",
+        focusNextNode: "Focus next node",
+        moveViewport: "Move canvas viewport",
+        focusNode: "Focus {node} node",
+      },
+      profileCard: {
+        koreanName: "최혁",
+        englishName: "CHOI HYUK",
+        role: "Backend / AI Application Developer",
+        experiences: [
+          {
+            icon: "school",
+            title: "Myongji University",
+            detail: "Computer Engineering",
+            period: "2020 ~ 2026",
+          },
+          {
+            icon: "company",
+            title: "Synapsoft",
+            detail: "AI Application Developer",
+            period: "2025 ~ 2026",
+          },
+        ],
+        skills: ["FastAPI", "RAG", "MCP"],
+      },
       primaryCta: "View core projects",
       secondaryCta: "Read technical notes",
       flow: [

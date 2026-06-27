@@ -17,9 +17,8 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = getDictionary(defaultLocale).projects.find(
-    (item) => item.slug === slug,
-  );
+  const dictionary = getDictionary(defaultLocale);
+  const project = dictionary.projects.find((item) => item.slug === slug);
 
   if (!project) {
     notFound();
@@ -27,7 +26,7 @@ export default async function ProjectDetailPage({
 
   return (
     <main className="min-h-screen bg-white text-zinc-700">
-      <ProjectDetailCanvas project={project} />
+      <ProjectDetailCanvas project={project} canvasLabels={dictionary.home.canvas} />
     </main>
   );
 }

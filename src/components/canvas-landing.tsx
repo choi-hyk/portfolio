@@ -5,15 +5,6 @@ import {
 } from "@/components/canvas/workflow-canvas";
 
 type CanvasLandingProps = {
-  profile: {
-    name: string;
-    role: string;
-    email: string;
-    links: {
-      github: string;
-      velog: string;
-    };
-  };
   home: {
     eyebrow: string;
     title: string;
@@ -24,6 +15,33 @@ type CanvasLandingProps = {
     velog: string;
     email: string;
     stats: string[];
+    slogan: {
+      emphasis: string;
+      body: string;
+      action: string;
+      closing: string;
+      final: string;
+    };
+    canvas: {
+      previousNode: string;
+      nextNode: string;
+      focusPreviousNode: string;
+      focusNextNode: string;
+      moveViewport: string;
+      focusNode: string;
+    };
+    profileCard: {
+      koreanName: string;
+      englishName: string;
+      role: string;
+      experiences: Array<{
+        icon: "school" | "company";
+        title: string;
+        detail: string;
+        period: string;
+      }>;
+      skills: string[];
+    };
     flow: Array<{
       label: string;
       title: string;
@@ -47,7 +65,7 @@ type CanvasLandingProps = {
   };
 };
 
-export function CanvasLanding({ profile, home }: CanvasLandingProps) {
+export function CanvasLanding({ home }: CanvasLandingProps) {
   const shell = {
     page: "bg-white text-zinc-700",
     border: "border-zinc-200",
@@ -60,110 +78,46 @@ export function CanvasLanding({ profile, home }: CanvasLandingProps) {
   };
   const canvasNodes: CanvasNode[] = [
     {
-      id: "intro",
+      id: "slogan",
       kind: "note",
-      x: 14,
-      y: 6,
-      width: 32,
+      appearance: "transparent",
+      x: 13,
+      y: 7,
+      width: 38,
       markdown: [
-        `# ${profile.name}`,
-        home.subtitle,
+        `# ${home.title}`,
         "",
-        `- Role: ${profile.role}`,
-        "- Focus: `FastAPI` `RAG` `MCP`",
-        "- Output: 서비스 구조, 자동화 도구, 기술 기록",
+        home.slogan.emphasis,
+        "",
+        home.slogan.body,
+        "",
+        home.slogan.action,
+        "",
+        home.slogan.closing,
+        "",
+        home.slogan.final,
       ].join("\n"),
     },
     {
-      id: "problem",
+      id: "profile",
       kind: "note",
-      x: 51,
-      y: 6,
-      width: 28,
+      x: 45,
+      y: 10,
+      width: 26,
       markdown: [
-        `## ${home.flow[0]?.title ?? "문제 정의"}`,
-        home.flow[0]?.description ?? "",
+        `## ${home.profileCard.koreanName} ${home.profileCard.englishName}`,
+        home.profileCard.role,
         "",
-        "AI 기능은 데모 화면보다 운영 흐름, 응답 품질, 유지보수 가능한 API 경계가 더 중요하다고 봅니다.",
-      ].join("\n"),
-    },
-    {
-      id: "code",
-      kind: "code",
-      x: 49,
-      y: 34,
-      width: 31,
-      markdown: [
-        "```ts",
-        'const stack = ["FastAPI", "RAG", "MCP", "Automation"];',
+        ...home.profileCard.experiences.map(
+          (experience) =>
+            `- :${experience.icon}: **${experience.title}** / ${experience.detail} / ${experience.period}`,
+        ),
         "",
-        "export function buildService(problem: string) {",
-        "  return connect(problem, stack);",
-        "}",
-        "```",
-      ].join("\n"),
-    },
-    {
-      id: "mermaid",
-      kind: "mermaid",
-      x: 16,
-      y: 42,
-      width: 27,
-      markdown: [
-        "```mermaid",
-        "flowchart LR",
-        "  problem --> api",
-        "  api --> rag",
-        "  rag --> product",
-        "```",
-      ].join("\n"),
-    },
-    {
-      id: "proof",
-      kind: "mention",
-      x: 58,
-      y: 66,
-      width: 31,
-      markdown: [
-        `## ${home.flow[2]?.title ?? "증거 확인"}`,
-        "@HippoBox @Blueprint4Agent @말하면OK @Velog",
-        "",
-        "조직 프로젝트와 개인 기록을 통해 구현 과정과 학습 밀도를 함께 보여줍니다.",
+        `- :stack: ${home.profileCard.skills.map((skill) => `\`${skill}\``).join(" ")}`,
       ].join("\n"),
     },
   ];
-  const canvasEdges: CanvasEdge[] = [
-    {
-      id: "intro-to-problem",
-      from: { nodeId: "intro", side: "right" },
-      to: { nodeId: "problem", side: "left" },
-      directed: true,
-    },
-    {
-      id: "problem-to-code",
-      from: { nodeId: "problem", side: "bottom" },
-      to: { nodeId: "code", side: "top" },
-      directed: true,
-    },
-    {
-      id: "intro-to-mermaid",
-      from: { nodeId: "intro", side: "bottom" },
-      to: { nodeId: "mermaid", side: "top" },
-      directed: false,
-    },
-    {
-      id: "code-to-proof",
-      from: { nodeId: "code", side: "bottom" },
-      to: { nodeId: "proof", side: "top" },
-      directed: true,
-    },
-    {
-      id: "mermaid-to-proof",
-      from: { nodeId: "mermaid", side: "right" },
-      to: { nodeId: "proof", side: "left" },
-      directed: true,
-    },
-  ];
+  const canvasEdges: CanvasEdge[] = [];
 
   return (
     <WorkflowCanvas
@@ -171,6 +125,7 @@ export function CanvasLanding({ profile, home }: CanvasLandingProps) {
       nodes={canvasNodes}
       edges={canvasEdges}
       shell={shell}
+      labels={home.canvas}
     />
   );
 }
