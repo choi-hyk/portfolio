@@ -78,6 +78,15 @@ export type Dictionary = {
       }>;
       skills: string[];
     };
+    projectSectionTitle: string;
+    featuredProjects: Array<{
+      title: string;
+      description: string;
+      highlights: string[];
+      stack: string[];
+      iconSrc: string;
+      iconAlt: string;
+    }>;
     primaryCta: string;
     secondaryCta: string;
     flow: Array<{
@@ -218,6 +227,54 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ],
         skills: ["FastAPI", "RAG", "MCP"],
       },
+      projectSectionTitle: "Projects",
+      featuredProjects: [
+        {
+          title: "HippoBox",
+          description: "MCP 기반 개인 지식 관리 도구입니다.",
+          highlights: [
+            "지식 항목을 저장하고 검색 가능한 구조로 관리합니다.",
+            "Claude, Cursor, Codex 같은 개발 도구와 연결할 수 있습니다.",
+          ],
+          stack: ["FastAPI", "MCP", "Embedding", "Semantic Search", "CLI"],
+          iconSrc: "/hippobox.svg",
+          iconAlt: "HippoBox 아이콘",
+        },
+        {
+          title: "말하면 OK",
+          description: "음성 인식 기반 키오스크 서비스입니다.",
+          highlights: [
+            "음성 주문과 추천 흐름을 분리된 서버 구조로 구성했습니다.",
+            "React, Node.js, FastAPI NLP 서버를 역할별로 연결했습니다.",
+          ],
+          stack: ["React", "Node.js", "FastAPI", "OpenAI"],
+          iconSrc: "/say-it-ok.png",
+          iconAlt: "말하면 OK 아이콘",
+        },
+        {
+          title: "Blueprint4Agent / B4A",
+          description:
+            "Agentic coding workflow를 위한 FastAPI 풀스택 블루프린트입니다.",
+          highlights: [
+            "서버 템플릿, 문서, CI, 배포 흐름을 표준화했습니다.",
+            "GitHub 자동화와 FastAPI/React 구조를 함께 정리했습니다.",
+          ],
+          stack: ["FastAPI", "React", "GitHub Actions", "Docker"],
+          iconSrc: "/b4a.svg",
+          iconAlt: "Blueprint4Agent 아이콘",
+        },
+        {
+          title: "Today in Tech",
+          description: "AI 기반 기술 뉴스 큐레이션 아카이브입니다.",
+          highlights: [
+            "공식 기술 블로그와 뉴스를 수집하고 선별합니다.",
+            "Docusaurus 문서 사이트로 누적 배포하는 흐름을 구성했습니다.",
+          ],
+          stack: ["Python", "OpenAI", "Docusaurus", "GitHub Actions"],
+          iconSrc: "/today-in-tech.svg",
+          iconAlt: "Today in Tech 아이콘",
+        },
+      ],
       primaryCta: "핵심 프로젝트 보기",
       secondaryCta: "기술 기록 보기",
       flow: [
@@ -501,6 +558,53 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ],
         skills: ["FastAPI", "RAG", "MCP"],
       },
+      projectSectionTitle: "Projects",
+      featuredProjects: [
+        {
+          title: "HippoBox",
+          description: "An MCP-based personal knowledge management tool.",
+          highlights: [
+            "Stores knowledge entries in a searchable structure.",
+            "Connects with developer tools such as Claude, Cursor, and Codex.",
+          ],
+          stack: ["FastAPI", "MCP", "Embedding", "Semantic Search", "CLI"],
+          iconSrc: "/hippobox.svg",
+          iconAlt: "HippoBox icon",
+        },
+        {
+          title: "Say It, It's OK",
+          description: "A voice-based kiosk service.",
+          highlights: [
+            "Supports voice ordering and recommendation flows through separated servers.",
+            "Connects a React client, Node.js API server, and FastAPI NLP server.",
+          ],
+          stack: ["React", "Node.js", "FastAPI", "OpenAI"],
+          iconSrc: "/say-it-ok.png",
+          iconAlt: "Say It, It's OK icon",
+        },
+        {
+          title: "Blueprint4Agent / B4A",
+          description: "A FastAPI full-stack blueprint for agentic coding workflows.",
+          highlights: [
+            "Standardizes server templates, docs, CI, and deployment flows.",
+            "Combines GitHub automation with FastAPI/React project structure.",
+          ],
+          stack: ["FastAPI", "React", "GitHub Actions", "Docker"],
+          iconSrc: "/b4a.svg",
+          iconAlt: "Blueprint4Agent icon",
+        },
+        {
+          title: "Today in Tech",
+          description: "An AI-powered tech news curation archive.",
+          highlights: [
+            "Collects and selects official tech blog posts and news.",
+            "Publishes the accumulated archive through a Docusaurus documentation site.",
+          ],
+          stack: ["Python", "OpenAI", "Docusaurus", "GitHub Actions"],
+          iconSrc: "/today-in-tech.svg",
+          iconAlt: "Today in Tech icon",
+        },
+      ],
       primaryCta: "View core projects",
       secondaryCta: "Read technical notes",
       flow: [

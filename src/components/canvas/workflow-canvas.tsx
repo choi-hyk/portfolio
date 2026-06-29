@@ -7,15 +7,22 @@ import {
   type WheelEvent,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { Building2, Code2, GraduationCap } from "lucide-react";
+import Image from "next/image";
 import { Tooltip } from "@/components/tooltip";
 
 type CanvasPoint = {
   x: number;
   y: number;
+};
+
+type CanvasSize = {
+  width: number;
+  height: number;
 };
 
 export type CanvasNodeKind = "note" | "code" | "mermaid" | "mention";
@@ -24,6 +31,10 @@ export type CanvasNode = {
   id: string;
   kind: CanvasNodeKind;
   appearance?: "default" | "transparent";
+  icon?: {
+    src: string;
+    alt: string;
+  };
   markdown: string;
   x: number;
   y: number;
@@ -74,10 +85,11 @@ type WorkflowCanvasProps = {
   occludedLeft?: number;
 };
 
-const CANVAS_SIZE = {
+const BASE_CANVAS_SIZE = {
   width: 2000,
   height: 1400,
 };
+const CANVAS_EXPANSION_PADDING = 160;
 const NODE_REVEAL_STEP_MS = 260;
 const EDGE_REVEAL_STEP_MS = 120;
 const EDGE_REVEAL_OFFSET_MS = 320;
@@ -111,7 +123,11 @@ export function WorkflowCanvas({
   const [canvasSize, setCanvasSize] = useState({ width: 1, height: 1 });
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [nodeHeights, setNodeHeights] = useState<CanvasNodeHeights>({});
-  const boundedPan = clampPan(pan, canvasSize, occludedLeft);
+  const contentSize = useMemo(
+    () => getCanvasContentSize(nodes, nodeHeights),
+    [nodes, nodeHeights],
+  );
+  const boundedPan = clampPan(pan, canvasSize, occludedLeft, contentSize);
   const nodeAnimationOrder = getTopLeftRenderOrder(nodes);
   const orderedNodes = getTopLeftOrderedNodes(nodes);
   const edgeAnimationBaseDelay =
@@ -193,6 +209,7 @@ export function WorkflowCanvas({
       },
       canvasSize,
       occludedLeft,
+      contentSize,
     );
 
     setPan(nextPan);
@@ -220,6 +237,7 @@ export function WorkflowCanvas({
         },
         canvasSize,
         occludedLeft,
+        contentSize,
       );
 
       setSelectedNodeId(
@@ -233,11 +251,11 @@ export function WorkflowCanvas({
     const effectiveLeft = Math.min(occludedLeft, canvasSize.width);
     const effectiveWidth = Math.max(1, canvasSize.width - effectiveLeft);
     const nextPan = {
-      x: effectiveLeft - point.x * CANVAS_SIZE.width + effectiveWidth / 2,
-      y: -point.y * CANVAS_SIZE.height + canvasSize.height / 2,
+      x: effectiveLeft - point.x * contentSize.width + effectiveWidth / 2,
+      y: -point.y * contentSize.height + canvasSize.height / 2,
     };
 
-    const boundedNextPan = clampPan(nextPan, canvasSize, occludedLeft);
+    const boundedNextPan = clampPan(nextPan, canvasSize, occludedLeft, contentSize);
 
     setPan(boundedNextPan);
     setSelectedNodeId(
@@ -266,7 +284,7 @@ export function WorkflowCanvas({
     };
 
     setSelectedNodeId(node.id);
-    setPan(clampPan(nextPan, canvasSize, occludedLeft));
+    setPan(clampPan(nextPan, canvasSize, occludedLeft, contentSize));
   };
   const handleStepFocus = (direction: "previous" | "next") => {
     const currentNodeId =
@@ -318,8 +336,8 @@ export function WorkflowCanvas({
             : "transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         ].join(" ")}
         style={{
-          width: CANVAS_SIZE.width,
-          height: CANVAS_SIZE.height,
+          width: contentSize.width,
+          height: contentSize.height,
           transform: `translate3d(${boundedPan.x}px, ${boundedPan.y}px, 0)`,
         }}
       >
@@ -327,6 +345,7 @@ export function WorkflowCanvas({
           edges={edges}
           nodes={nodes}
           nodeHeights={nodeHeights}
+          canvasSize={contentSize}
           animationBaseDelay={edgeAnimationBaseDelay}
         />
 
@@ -351,7 +370,7 @@ export function WorkflowCanvas({
         nodeHeights={nodeHeights}
         pan={boundedPan}
         viewportSize={canvasSize}
-        canvasSize={CANVAS_SIZE}
+        canvasSize={contentSize}
         occludedLeft={occludedLeft}
         onNavigate={handleMiniMapNavigate}
         labels={labels}
@@ -524,24 +543,26 @@ function CanvasMiniMap({
           className="fill-zinc-50 stroke-zinc-200"
           vectorEffect="non-scaling-stroke"
         />
-        {nodes.map((node) => (
-          <rect
-            key={node.id}
-            x={node.x}
-            y={node.y}
-            width={node.width}
-            height={
-              ((nodeHeights[node.id] ?? getNodeHeight(node)) / CANVAS_SIZE.height) * 100
-            }
-            rx="2"
-            className={
-              node.kind === "mention"
-                ? "fill-teal-100 stroke-teal-400"
-                : "fill-white stroke-zinc-300"
-            }
-            vectorEffect="non-scaling-stroke"
-          />
-        ))}
+        {nodes.map((node) => {
+          const box = getNodeBox(node, nodeHeights);
+
+          return (
+            <rect
+              key={node.id}
+              x={(box.x / canvasSize.width) * 100}
+              y={(box.y / canvasSize.height) * 100}
+              width={(box.width / canvasSize.width) * 100}
+              height={(box.height / canvasSize.height) * 100}
+              rx="2"
+              className={
+                node.kind === "mention"
+                  ? "fill-teal-100 stroke-teal-400"
+                  : "fill-white stroke-zinc-300"
+              }
+              vectorEffect="non-scaling-stroke"
+            />
+          );
+        })}
         <rect
           x={viewport.x}
           y={viewport.y}
@@ -560,6 +581,7 @@ type CanvasEdgesProps = {
   edges: CanvasEdge[];
   nodes: CanvasNode[];
   nodeHeights: CanvasNodeHeights;
+  canvasSize: CanvasSize;
   animationBaseDelay: number;
 };
 
@@ -567,13 +589,14 @@ function CanvasEdges({
   edges,
   nodes,
   nodeHeights,
+  canvasSize,
   animationBaseDelay,
 }: CanvasEdgesProps) {
   return (
     <svg
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 z-0 hidden h-full w-full text-teal-700 md:block"
-      viewBox={`0 0 ${CANVAS_SIZE.width} ${CANVAS_SIZE.height}`}
+      viewBox={`0 0 ${canvasSize.width} ${canvasSize.height}`}
     >
       <defs>
         <marker
@@ -686,11 +709,31 @@ function getSideDirection(side: CanvasNodeSide): CanvasPoint {
 
 function getNodeBox(node: CanvasNode, nodeHeights: CanvasNodeHeights = {}) {
   return {
-    x: (node.x / 100) * CANVAS_SIZE.width,
-    y: (node.y / 100) * CANVAS_SIZE.height,
-    width: (node.width / 100) * CANVAS_SIZE.width,
+    x: (node.x / 100) * BASE_CANVAS_SIZE.width,
+    y: (node.y / 100) * BASE_CANVAS_SIZE.height,
+    width: (node.width / 100) * BASE_CANVAS_SIZE.width,
     height: nodeHeights[node.id] ?? getNodeHeight(node),
   };
+}
+
+function getCanvasContentSize(
+  nodes: CanvasNode[],
+  nodeHeights: CanvasNodeHeights,
+): CanvasSize {
+  return nodes.reduce<CanvasSize>((size, node) => {
+    const box = getNodeBox(node, nodeHeights);
+
+    return {
+      width: Math.max(
+        size.width,
+        Math.ceil(box.x + box.width + CANVAS_EXPANSION_PADDING),
+      ),
+      height: Math.max(
+        size.height,
+        Math.ceil(box.y + box.height + CANVAS_EXPANSION_PADDING),
+      ),
+    };
+  }, BASE_CANVAS_SIZE);
 }
 
 function getNodeHeight(node: CanvasNode) {
@@ -774,19 +817,33 @@ function MarkdownNode({
       className={`workflow-node ${appearance}`}
       style={
         {
-          left: `${node.x}%`,
-          top: `${node.y}%`,
-          width: `${node.width}%`,
+          left: (node.x / 100) * BASE_CANVAS_SIZE.width,
+          top: (node.y / 100) * BASE_CANVAS_SIZE.height,
+          width: (node.width / 100) * BASE_CANVAS_SIZE.width,
           animationDelay: `${animationOrder * NODE_REVEAL_STEP_MS}ms`,
         } as CSSProperties
       }
     >
-      <MarkdownBody
-        markdown={node.markdown}
-        kind={node.kind}
-        shell={shell}
-        appearance={node.appearance ?? "default"}
-      />
+      <div className={node.icon ? "flex items-start gap-3" : undefined}>
+        {node.icon ? (
+          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white">
+            <Image
+              src={node.icon.src}
+              alt={node.icon.alt}
+              width={28}
+              height={28}
+              unoptimized
+              className="h-7 w-7"
+            />
+          </div>
+        ) : null}
+        <MarkdownBody
+          markdown={node.markdown}
+          kind={node.kind}
+          shell={shell}
+          appearance={node.appearance ?? "default"}
+        />
+      </div>
     </article>
   );
 }
@@ -1124,13 +1181,14 @@ function clamp(value: number, min: number, max: number) {
 
 function clampPan(
   pan: CanvasPoint,
-  viewportSize: { width: number; height: number },
+  viewportSize: CanvasSize,
   occludedLeft: number,
+  contentSize: CanvasSize,
 ) {
   const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
-  const minX = Math.min(0, viewportSize.width - CANVAS_SIZE.width);
+  const minX = Math.min(0, viewportSize.width - contentSize.width);
   const maxX = effectiveLeft;
-  const minY = Math.min(0, viewportSize.height - CANVAS_SIZE.height);
+  const minY = Math.min(0, viewportSize.height - contentSize.height);
   const maxY = 0;
 
   return {

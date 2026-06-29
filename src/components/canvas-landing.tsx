@@ -41,6 +41,15 @@ type CanvasLandingProps = {
       }>;
       skills: string[];
     };
+    projectSectionTitle: string;
+    featuredProjects: Array<{
+      title: string;
+      description: string;
+      highlights: string[];
+      stack: string[];
+      iconSrc: string;
+      iconAlt: string;
+    }>;
     flow: Array<{
       label: string;
       title: string;
@@ -113,6 +122,34 @@ export function CanvasLanding({ home }: CanvasLandingProps) {
         `- :stack: ${home.profileCard.skills.map((skill) => `\`${skill}\``).join(" ")}`,
       ].join("\n"),
     },
+    {
+      id: "projects-heading",
+      kind: "note",
+      appearance: "transparent",
+      x: 13,
+      y: 30,
+      width: 28,
+      markdown: [`# ${home.projectSectionTitle}`].join("\n"),
+    },
+    ...home.featuredProjects.map((project, index) => ({
+      id: `project-${index + 1}`,
+      kind: "note" as const,
+      icon: {
+        src: project.iconSrc,
+        alt: project.iconAlt,
+      },
+      x: 13,
+      y: 36 + index * 17,
+      width: 31,
+      markdown: [
+        `## ${project.title}`,
+        project.description,
+        "",
+        ...project.highlights.map((highlight) => `- ${highlight}`),
+        "",
+        project.stack.map((stack) => `\`${stack}\``).join(" "),
+      ].join("\n"),
+    })),
   ];
   const canvasEdges: CanvasEdge[] = [];
 
