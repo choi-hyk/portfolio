@@ -98,6 +98,7 @@ export function Tooltip({
         className={`inline-flex ${className}`}
         onMouseEnter={() => setVisible(true)}
         onMouseLeave={() => setVisible(false)}
+        onClickCapture={() => setVisible(false)}
         onFocusCapture={() => setVisible(true)}
         onBlurCapture={handleBlur}
       >
