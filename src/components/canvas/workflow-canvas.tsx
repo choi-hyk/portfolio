@@ -36,6 +36,8 @@ export type CanvasNode = {
     alt: string;
   };
   markdown: string;
+  excludeFromSequence?: boolean;
+  order?: number;
   x: number;
   y: number;
   width: number;
@@ -128,8 +130,8 @@ export function WorkflowCanvas({
     [nodes, nodeHeights],
   );
   const boundedPan = clampPan(pan, canvasSize, occludedLeft, contentSize);
-  const nodeAnimationOrder = getTopLeftRenderOrder(nodes);
-  const orderedNodes = getTopLeftOrderedNodes(nodes);
+  const nodeAnimationOrder = getCanvasRenderOrder(nodes);
+  const orderedNodes = getCanvasOrderedNodes(nodes);
   const edgeAnimationBaseDelay =
     nodes.length * NODE_REVEAL_STEP_MS + EDGE_REVEAL_OFFSET_MS;
 
@@ -355,7 +357,7 @@ export function WorkflowCanvas({
               key={node.id}
               node={node}
               shell={shell}
-              animationOrder={nodeAnimationOrder.get(node.id) ?? 0}
+              animationOrder={nodeAnimationOrder.get(node.id)}
               selected={selectedNodeId === node.id}
               onFocus={() => handleNodeFocus(node)}
               onResize={handleNodeResize}
@@ -755,7 +757,7 @@ function getNodeHeight(node: CanvasNode) {
 type MarkdownNodeProps = {
   node: CanvasNode;
   shell: CanvasShell;
-  animationOrder: number;
+  animationOrder?: number;
   selected: boolean;
   onFocus: () => void;
   onResize: (nodeId: string, height: number) => void;
@@ -820,7 +822,10 @@ function MarkdownNode({
           left: (node.x / 100) * BASE_CANVAS_SIZE.width,
           top: (node.y / 100) * BASE_CANVAS_SIZE.height,
           width: (node.width / 100) * BASE_CANVAS_SIZE.width,
-          animationDelay: `${animationOrder * NODE_REVEAL_STEP_MS}ms`,
+          animationDelay:
+            animationOrder === undefined
+              ? undefined
+              : `${animationOrder * NODE_REVEAL_STEP_MS}ms`,
         } as CSSProperties
       }
     >
@@ -1197,16 +1202,43 @@ function clampPan(
   };
 }
 
-function getTopLeftRenderOrder(nodes: CanvasNode[]) {
-  return new Map(getTopLeftOrderedNodes(nodes).map((node, index) => [node.id, index]));
+function getCanvasRenderOrder(nodes: CanvasNode[]) {
+  return new Map(getCanvasOrderedNodes(nodes).map((node, index) => [node.id, index]));
 }
 
-function getTopLeftOrderedNodes(nodes: CanvasNode[]) {
-  return [...nodes].sort((a, b) => {
-    const diagonalOrder = a.x + a.y - (b.x + b.y);
+function getCanvasOrderedNodes(nodes: CanvasNode[]) {
+  const sequenceNodes = nodes.filter((node) => !node.excludeFromSequence);
+  const automaticOrder = new Map(
+    [...sequenceNodes]
+      .sort(compareByCanvasPosition)
+      .map((node, index) => [node.id, index + 1]),
+  );
 
-    return diagonalOrder || a.y - b.y || a.x - b.x;
+  return [...sequenceNodes].sort((a, b) => {
+    const sequenceOrder =
+      (a.order ?? automaticOrder.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+      (b.order ?? automaticOrder.get(b.id) ?? Number.MAX_SAFE_INTEGER);
+
+    if (sequenceOrder !== 0) {
+      return sequenceOrder;
+    }
+
+    if (a.order !== undefined && b.order === undefined) {
+      return -1;
+    }
+
+    if (a.order === undefined && b.order !== undefined) {
+      return 1;
+    }
+
+    return compareByCanvasPosition(a, b);
   });
+}
+
+function compareByCanvasPosition(a: CanvasNode, b: CanvasNode) {
+  const diagonalOrder = a.x + a.y - (b.x + b.y);
+
+  return diagonalOrder || a.y - b.y || a.x - b.x;
 }
 
 function getViewportFocusedNodeId(
