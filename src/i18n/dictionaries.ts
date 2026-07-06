@@ -243,35 +243,37 @@ export const dictionaries: Record<Locale, Dictionary> = {
       featuredProjects: [
         {
           title: "HippoBox",
-          description: "MCP 기반 개인 지식 관리 도구입니다.",
+          description:
+            "지식을 저장하고 MCP로 조회·관리할 수 있는 개인 지식 관리 서비스입니다.",
           highlights: [
-            "지식 항목을 저장하고 검색 가능한 구조로 관리합니다.",
-            "Claude, Cursor, Codex 같은 개발 도구와 연결할 수 있습니다.",
+            "지식 항목을 저장하고 RAG 기반으로 필요한 내용을 검색합니다.",
+            "MCP를 통해 Claude, Cursor, Codex에서 저장된 지식을 조회하고 활용합니다.",
           ],
-          stack: ["FastAPI", "MCP", "Embedding", "Semantic Search", "CLI"],
+          stack: ["MCP", "RAG"],
           iconSrc: "/hippobox.svg",
           iconAlt: "HippoBox 아이콘",
         },
         {
           title: "말하면 OK",
-          description: "음성 인식 기반 키오스크 서비스입니다.",
+          description:
+            "음성 인식 기반으로 사용자의 자연어 요청에 맞는 응답과 행동을 수행하는 키오스크 서비스입니다.",
           highlights: [
-            "음성 주문과 추천 흐름을 분리된 서버 구조로 구성했습니다.",
-            "React, Node.js, FastAPI NLP 서버를 역할별로 연결했습니다.",
+            "STT로 음성 요청을 자연어로 변환하고 사용자의 의도를 분석합니다.",
+            "요청 결과에 맞춰 안내 응답과 키오스크 동작을 수행하고 TTS로 전달합니다.",
           ],
-          stack: ["React", "Node.js", "FastAPI", "OpenAI"],
+          stack: ["React", "Node.js", "FastAPI", "OpenAI", "STT", "TTS"],
           iconSrc: "/say-it-ok.png",
           iconAlt: "말하면 OK 아이콘",
         },
         {
           title: "Blueprint4Agent / B4A",
           description:
-            "Agentic coding workflow를 위한 FastAPI 풀스택 블루프린트입니다.",
+            "바이브 코딩과 에이전틱 코딩 사용자를 위한 FastAPI 프로젝트 템플릿입니다.",
           highlights: [
-            "서버 템플릿, 문서, CI, 배포 흐름을 표준화했습니다.",
-            "GitHub 자동화와 FastAPI/React 구조를 함께 정리했습니다.",
+            "로그인과 배포 플로우 등 서비스에 필요한 표준 동작을 구현했습니다.",
+            "서버 템플릿, 문서, CI와 GitHub 자동화 구성을 제공합니다.",
           ],
-          stack: ["FastAPI", "React", "GitHub Actions", "Docker"],
+          stack: ["FastAPI", "GitHub Actions", "Docker"],
           iconSrc: "/b4a.svg",
           iconAlt: "Blueprint4Agent 아이콘",
         },
@@ -434,7 +436,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         title: "HippoBox",
         type: "Organization",
         description:
-          "여러 AI 서비스에서 공통으로 사용할 수 있는 개인 지식 베이스 서비스입니다. FastAPI 기반 API, 임베딩 검색, MCP 연동을 통해 Claude, Cursor, Codex 같은 MCP 호환 클라이언트에서 저장된 지식을 활용할 수 있도록 구성했습니다.",
+          "지식을 저장하고 MCP로 조회·관리할 수 있는 개인 지식 관리 서비스입니다. FastAPI 기반 API와 RAG 검색을 제공하며, Claude, Cursor, Codex 같은 MCP 호환 클라이언트에서 저장된 지식을 활용할 수 있습니다.",
         href: "https://github.com/HippoBox/hippobox",
         stack: ["FastAPI", "MCP", "Embeddings", "TypeScript"],
         featured: true,
@@ -444,9 +446,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
         title: "Blueprint4Agent / B4A",
         type: "Organization",
         description:
-          "Agentic coding workflow에 맞춘 FastAPI 풀스택 서버 블루프린트와 GitHub 자동화 도구입니다. B4FastAPI와 B4Bot을 통해 서버 템플릿, 문서, CI, 이슈 생성 자동화를 표준화했습니다.",
+          "바이브 코딩과 에이전틱 코딩 사용자를 위한 FastAPI 프로젝트 템플릿입니다. B4FastAPI와 B4Bot을 통해 로그인과 배포 플로우 등 표준 동작과 문서, CI, GitHub 자동화 구성을 제공합니다.",
         href: "https://github.com/Blueprint4Agent",
-        stack: ["FastAPI", "React", "GitHub Actions", "Docker"],
+        stack: ["FastAPI", "GitHub Actions", "Docker"],
         featured: true,
       },
       {
@@ -454,9 +456,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
         title: "말하면 OK",
         type: "Team Project",
         description:
-          "음성 인식 기반 키오스크 서비스입니다. React 클라이언트, Node.js API 서버, FastAPI NLP 서버가 분리된 구조로 주문 및 추천 흐름을 지원했습니다.",
+          "음성 인식 기반으로 사용자의 자연어 요청에 맞는 응답과 행동을 수행하는 키오스크 서비스입니다. STT로 요청을 분석하고 결과에 맞는 안내와 키오스크 동작을 수행한 뒤 TTS로 응답합니다.",
         href: "https://github.com/Say-It-It-s-OK",
-        stack: ["React", "Node.js", "FastAPI", "OpenAI"],
+        stack: ["React", "Node.js", "FastAPI", "OpenAI", "STT", "TTS"],
         featured: true,
       },
       {
@@ -588,34 +590,37 @@ export const dictionaries: Record<Locale, Dictionary> = {
       featuredProjects: [
         {
           title: "HippoBox",
-          description: "An MCP-based personal knowledge management tool.",
+          description:
+            "A personal knowledge service for storing, retrieving, and managing knowledge through MCP.",
           highlights: [
-            "Stores knowledge entries in a searchable structure.",
-            "Connects with developer tools such as Claude, Cursor, and Codex.",
+            "Stores knowledge entries and retrieves relevant content through RAG.",
+            "Makes stored knowledge available in Claude, Cursor, and Codex through MCP.",
           ],
-          stack: ["FastAPI", "MCP", "Embedding", "Semantic Search", "CLI"],
+          stack: ["MCP", "RAG"],
           iconSrc: "/hippobox.svg",
           iconAlt: "HippoBox icon",
         },
         {
           title: "Say It, It's OK",
-          description: "A voice-based kiosk service.",
+          description:
+            "A voice-enabled kiosk service that responds to natural-language requests with appropriate answers and actions.",
           highlights: [
-            "Supports voice ordering and recommendation flows through separated servers.",
-            "Connects a React client, Node.js API server, and FastAPI NLP server.",
+            "Uses STT to convert voice requests into text and analyze user intent.",
+            "Performs the appropriate kiosk action and delivers its response through TTS.",
           ],
-          stack: ["React", "Node.js", "FastAPI", "OpenAI"],
+          stack: ["React", "Node.js", "FastAPI", "OpenAI", "STT", "TTS"],
           iconSrc: "/say-it-ok.png",
           iconAlt: "Say It, It's OK icon",
         },
         {
           title: "Blueprint4Agent / B4A",
-          description: "A FastAPI full-stack blueprint for agentic coding workflows.",
+          description:
+            "A FastAPI project template for vibe coding and agentic coding users.",
           highlights: [
-            "Standardizes server templates, docs, CI, and deployment flows.",
-            "Combines GitHub automation with FastAPI/React project structure.",
+            "Implements standard application flows such as authentication and deployment.",
+            "Provides server templates, documentation, CI, and GitHub automation.",
           ],
-          stack: ["FastAPI", "React", "GitHub Actions", "Docker"],
+          stack: ["FastAPI", "GitHub Actions", "Docker"],
           iconSrc: "/b4a.svg",
           iconAlt: "Blueprint4Agent icon",
         },
@@ -778,7 +783,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         title: "HippoBox",
         type: "Organization",
         description:
-          "A personal knowledge base service designed for multiple AI clients. It combines FastAPI APIs, embedding search, and MCP integration for Claude, Cursor, Codex, and other MCP-compatible clients.",
+          "A personal knowledge service for storing, retrieving, and managing knowledge through MCP. It provides FastAPI APIs and RAG retrieval so Claude, Cursor, Codex, and other MCP-compatible clients can use stored knowledge.",
         href: "https://github.com/HippoBox/hippobox",
         stack: ["FastAPI", "MCP", "Embeddings", "TypeScript"],
         featured: true,
@@ -788,9 +793,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
         title: "Blueprint4Agent / B4A",
         type: "Organization",
         description:
-          "A FastAPI full-stack blueprint and GitHub automation foundation for agentic coding workflows. B4FastAPI and B4Bot standardize server templates, docs, CI, and issue generation.",
+          "A FastAPI project template for vibe coding and agentic coding users. B4FastAPI and B4Bot provide standard flows such as authentication and deployment along with documentation, CI, and GitHub automation.",
         href: "https://github.com/Blueprint4Agent",
-        stack: ["FastAPI", "React", "GitHub Actions", "Docker"],
+        stack: ["FastAPI", "GitHub Actions", "Docker"],
         featured: true,
       },
       {
@@ -798,9 +803,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
         title: "Say It, It's OK",
         type: "Team Project",
         description:
-          "A voice-based kiosk service with a React client, Node.js API server, and FastAPI NLP server supporting order and recommendation flows.",
+          "A voice-enabled kiosk service that responds to natural-language requests with appropriate answers and actions. It analyzes requests through STT, performs the relevant kiosk action, and delivers responses through TTS.",
         href: "https://github.com/Say-It-It-s-OK",
-        stack: ["React", "Node.js", "FastAPI", "OpenAI"],
+        stack: ["React", "Node.js", "FastAPI", "OpenAI", "STT", "TTS"],
         featured: true,
       },
       {
