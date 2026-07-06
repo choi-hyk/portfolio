@@ -57,6 +57,18 @@ html {
   box-shadow: none;
 }
 
+.workflow-node[data-appearance="section"]:hover {
+  border-color: rgb(153 246 228);
+  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.05);
+  transform: none;
+}
+
+.workflow-node[data-appearance="technology"]:hover {
+  border-color: #5eead4;
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.08);
+  transform: translate3d(0, -2px, 0);
+}
+
 .workflow-node[data-selected="true"] {
   border-color: #0f766e;
   box-shadow:
@@ -67,6 +79,16 @@ html {
 .workflow-node[data-appearance="transparent"][data-selected="true"] {
   border-color: transparent;
   box-shadow: none;
+}
+
+.workflow-node[data-appearance="section"][data-selected="true"] {
+  border-color: rgb(153 246 228);
+  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.05);
+}
+
+.workflow-node[data-appearance="technology"][data-selected="true"] {
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.16);
 }
 
 .workflow-edge {
@@ -100,6 +122,10 @@ html {
     left: auto !important;
     top: auto !important;
     width: 100% !important;
+  }
+
+  .workflow-node[data-appearance="section"] {
+    min-height: 0 !important;
   }
 }
 

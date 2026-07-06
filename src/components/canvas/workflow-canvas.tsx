@@ -48,7 +48,7 @@ export type CanvasNode = {
   title?: string;
   titleHref?: string;
   titleTooltip?: string;
-  appearance?: "default" | "transparent";
+  appearance?: "default" | "transparent" | "section" | "technology";
   icon?: {
     src: string;
     alt: string;
@@ -56,7 +56,9 @@ export type CanvasNode = {
   markdown: string;
   equalHeightGroup?: string;
   excludeFromSequence?: boolean;
+  layer?: "background" | "foreground";
   order?: number;
+  height?: number;
   x: number;
   y: number;
   width: number;
@@ -534,7 +536,7 @@ export function WorkflowCanvas({
           animationBaseDelay={edgeAnimationBaseDelay}
         />
 
-        <div className="relative z-10 h-full w-full space-y-4 p-4 md:block md:space-y-0 md:p-0">
+        <div className="relative h-full w-full space-y-4 p-4 md:block md:space-y-0 md:p-0">
           {nodes.map((node) => (
             <MarkdownNode
               key={node.id}
@@ -858,7 +860,7 @@ function CanvasEdges({
   return (
     <svg
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-0 hidden h-full w-full text-teal-700 md:block"
+      className="pointer-events-none absolute inset-0 z-10 hidden h-full w-full text-teal-700 md:block"
       viewBox={`0 0 ${canvasSize.width} ${canvasSize.height}`}
     >
       <defs>
@@ -1000,6 +1002,10 @@ function getCanvasContentSize(
 }
 
 function getNodeHeight(node: CanvasNode) {
+  if (node.height) {
+    return node.height;
+  }
+
   if (node.kind === "code") {
     return 250;
   }
@@ -1043,10 +1049,18 @@ function MarkdownNode({
     mermaid: "border-t-4 border-t-sky-500 bg-sky-50/70",
     mention: "border-t-4 border-t-emerald-500 bg-emerald-50",
   }[node.kind];
-  const appearance =
-    node.appearance === "transparent"
-      ? "border-transparent bg-transparent p-0 shadow-none backdrop-blur-0"
-      : `rounded-md border border-zinc-200 p-4 shadow-md shadow-zinc-900/8 backdrop-blur ${variant}`;
+  const appearance = {
+    default: `rounded-md border border-zinc-200 p-4 shadow-md shadow-zinc-900/8 backdrop-blur ${variant}`,
+    transparent: "border-transparent bg-transparent p-0 shadow-none backdrop-blur-0",
+    section:
+      "rounded-xl border border-teal-200 bg-teal-50/40 p-5 shadow-sm shadow-zinc-900/5",
+    technology:
+      "rounded-lg border border-zinc-200 bg-transparent p-3 shadow-none",
+  }[node.appearance ?? "default"];
+  const isSection = node.appearance === "section";
+  const isTechnology = node.appearance === "technology";
+  const nodeLayer = isSection || node.layer === "background" ? "z-0" : "z-20";
+  const inlineIconSize = isTechnology ? 36 : isSection ? 22 : 28;
 
   useEffect(() => {
     const element = nodeRef.current;
@@ -1068,15 +1082,27 @@ function MarkdownNode({
     left: (node.x / 100) * BASE_CANVAS_SIZE.width,
     top: (node.y / 100) * BASE_CANVAS_SIZE.height,
     width: (node.width / 100) * BASE_CANVAS_SIZE.width,
-    minHeight,
+    minHeight: node.height ?? minHeight,
     animationDelay:
       animationOrder === undefined
         ? undefined
         : `${animationOrder * NODE_REVEAL_STEP_MS}ms`,
   } as CSSProperties;
-  const nodeClassName = `workflow-node relative ${appearance}`;
+  const nodeClassName = `workflow-node relative ${
+    isSection ? "pointer-events-none" : ""
+  } ${nodeLayer} ${appearance}`;
   const nodeContent = (
-    <div className={node.icon && !node.title ? "flex items-start gap-3" : undefined}>
+    <div
+      className={
+        node.icon && !node.title
+          ? isTechnology
+            ? "flex items-center gap-3"
+            : isSection
+              ? "flex items-center gap-2.5"
+              : "flex items-start gap-3"
+          : undefined
+      }
+    >
       {node.title && node.appearance !== "transparent" ? (
         <div className="absolute -top-14 left-0 flex items-center gap-2 text-xl font-semibold leading-8 tracking-tight text-zinc-950 md:text-2xl">
           {node.icon ? (
@@ -1111,14 +1137,24 @@ function MarkdownNode({
         </div>
       ) : null}
       {node.icon && !node.title ? (
-        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white">
+        <div
+          className={
+            isTechnology
+              ? "flex h-12 w-12 shrink-0 items-center justify-center"
+              : isSection
+                ? "flex h-7 w-7 shrink-0 items-center justify-center"
+                : "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white"
+          }
+        >
           <Image
             src={node.icon.src}
             alt={node.icon.alt}
-            width={28}
-            height={28}
+            width={inlineIconSize}
+            height={inlineIconSize}
             unoptimized
-            className="h-7 w-7"
+            className={
+              isTechnology ? "h-9 w-9" : isSection ? "h-[22px] w-[22px]" : "h-7 w-7"
+            }
           />
         </div>
       ) : null}
@@ -1136,13 +1172,17 @@ function MarkdownNode({
   return (
     <article
       ref={nodeRef}
-      role="button"
-      tabIndex={0}
-      aria-label={labels.focusNode.replace("{node}", node.id)}
+      role={isSection ? "presentation" : "button"}
+      tabIndex={isSection ? -1 : 0}
+      aria-label={isSection ? undefined : labels.focusNode.replace("{node}", node.id)}
       data-appearance={node.appearance ?? "default"}
       data-selected={selected}
-      onClick={onFocus}
+      onClick={isSection ? undefined : onFocus}
       onKeyDown={(event) => {
+        if (isSection) {
+          return;
+        }
+
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           onFocus();
@@ -1171,7 +1211,11 @@ function MarkdownBody({ markdown, kind, shell, appearance }: MarkdownBodyProps) 
       className={
         appearance === "transparent"
           ? "space-y-2 text-base leading-7"
-          : "space-y-3 text-sm leading-6"
+          : appearance === "technology"
+            ? "min-w-0 space-y-0.5 text-xs leading-5"
+            : appearance === "section"
+              ? "space-y-0 text-sm leading-5"
+              : "space-y-3 text-sm leading-6"
       }
     >
       {blocks.map((block, index) => {
@@ -1425,7 +1469,7 @@ function getHeadingSize(
   }
 
   if (level === 2) {
-    return "text-sm";
+    return appearance === "section" ? "text-base leading-6" : "text-sm";
   }
 
   return appearance === "transparent" ? "text-xl leading-8 md:text-2xl" : "text-xs";
