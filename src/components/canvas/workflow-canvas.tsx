@@ -47,6 +47,7 @@ export type CanvasNode = {
     alt: string;
   };
   markdown: string;
+  equalHeightGroup?: string;
   excludeFromSequence?: boolean;
   order?: number;
   x: number;
@@ -164,6 +165,7 @@ export function WorkflowCanvas({
     zoom,
   );
   const nodeAnimationOrder = getCanvasRenderOrder(nodes);
+  const equalHeightGroups = getEqualHeightGroups(nodes, nodeHeights);
   const orderedNodes = getCanvasOrderedNodes(nodes);
   const edgeAnimationBaseDelay =
     nodes.length * NODE_REVEAL_STEP_MS + EDGE_REVEAL_OFFSET_MS;
@@ -532,6 +534,11 @@ export function WorkflowCanvas({
               node={node}
               shell={shell}
               animationOrder={nodeAnimationOrder.get(node.id)}
+              minHeight={
+                node.equalHeightGroup
+                  ? equalHeightGroups.get(node.equalHeightGroup)
+                  : undefined
+              }
               selected={selectedNodeId === node.id}
               onFocus={() => handleNodeFocus(node)}
               onResize={handleNodeResize}
@@ -1005,6 +1012,7 @@ type MarkdownNodeProps = {
   node: CanvasNode;
   shell: CanvasShell;
   animationOrder?: number;
+  minHeight?: number;
   selected: boolean;
   onFocus: () => void;
   onResize: (nodeId: string, height: number) => void;
@@ -1015,6 +1023,7 @@ function MarkdownNode({
   node,
   shell,
   animationOrder,
+  minHeight,
   selected,
   onFocus,
   onResize,
@@ -1069,6 +1078,7 @@ function MarkdownNode({
           left: (node.x / 100) * BASE_CANVAS_SIZE.width,
           top: (node.y / 100) * BASE_CANVAS_SIZE.height,
           width: (node.width / 100) * BASE_CANVAS_SIZE.width,
+          minHeight,
           animationDelay:
             animationOrder === undefined
               ? undefined
@@ -1549,6 +1559,20 @@ function getViewportCenter(viewportSize: CanvasSize, occludedLeft: number) {
 
 function getCanvasRenderOrder(nodes: CanvasNode[]) {
   return new Map(getCanvasOrderedNodes(nodes).map((node, index) => [node.id, index]));
+}
+
+function getEqualHeightGroups(nodes: CanvasNode[], nodeHeights: CanvasNodeHeights) {
+  return nodes.reduce<Map<string, number>>((groups, node) => {
+    if (!node.equalHeightGroup) {
+      return groups;
+    }
+
+    const height = nodeHeights[node.id] ?? getNodeHeight(node);
+    const currentHeight = groups.get(node.equalHeightGroup) ?? 0;
+
+    groups.set(node.equalHeightGroup, Math.max(currentHeight, height));
+    return groups;
+  }, new Map());
 }
 
 function getCanvasOrderedNodes(nodes: CanvasNode[]) {

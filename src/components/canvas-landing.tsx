@@ -160,14 +160,15 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
     ...home.featuredProjects.map((project, index) => ({
       id: `project-${index + 1}`,
       kind: "note" as const,
+      equalHeightGroup: "featured-projects",
       icon: {
         src: project.iconSrc,
         alt: project.iconAlt,
       },
       order: 3 + index,
-      x: 13,
-      y: 58 + index * 17,
-      width: 31,
+      x: index % 2 === 0 ? 13 : 50,
+      y: 58 + Math.floor(index / 2) * 22,
+      width: 33,
       markdown: [
         `## ${project.title}`,
         project.description,
