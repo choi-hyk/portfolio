@@ -49,11 +49,15 @@ export type Dictionary = {
       final: string;
     };
     techFocus: {
-      title: string;
       buildTitle: string;
       buildItems: string[];
       stackTitle: string;
       stacks: string[];
+    };
+    nodeTitles: {
+      profile: string;
+      links: string;
+      techFocus: string;
     };
     canvas: {
       previousNode: string;
@@ -193,7 +197,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         final: "그것이 제가 추구하는 AI 시대의 개발 역량입니다.",
       },
       techFocus: {
-        title: "관심 분야",
         buildTitle: "What I Build",
         buildItems: [
           "AI Application",
@@ -201,8 +204,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
           "Agent Workflow",
           "Knowledge Systems",
         ],
-        stackTitle: "주요 스택",
+        stackTitle: "Primary Stack",
         stacks: ["Python", "FastAPI", "TypeScript", "React", "Docker"],
+      },
+      nodeTitles: {
+        profile: "Profile",
+        links: "Links",
+        techFocus: "Tech Focus",
       },
       canvas: {
         previousNode: "이전 노드",
@@ -233,7 +241,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ],
         skills: ["FastAPI", "RAG", "MCP"],
       },
-      projectSectionTitle: "프로젝트",
+      projectSectionTitle: "Projects",
       featuredProjects: [
         {
           title: "HippoBox",
@@ -518,7 +526,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         final: "That is the development capability I pursue in the AI era.",
       },
       techFocus: {
-        title: "TechFocus",
         buildTitle: "What I Build",
         buildItems: [
           "AI Application",
@@ -528,6 +535,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ],
         stackTitle: "Primary Stack",
         stacks: ["Python", "FastAPI", "TypeScript", "React", "Docker"],
+      },
+      nodeTitles: {
+        profile: "Profile",
+        links: "Links",
+        techFocus: "Tech Focus",
       },
       canvas: {
         previousNode: "Previous node",

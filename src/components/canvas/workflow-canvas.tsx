@@ -1369,15 +1369,15 @@ function getHeadingSize(
 ) {
   if (level === 1) {
     return appearance === "transparent"
-      ? "text-4xl leading-tight md:text-5xl"
-      : "text-xl";
+      ? "text-3xl leading-tight md:text-4xl"
+      : "text-lg";
   }
 
   if (level === 2) {
-    return "text-base";
+    return "text-sm";
   }
 
-  return appearance === "transparent" ? "text-2xl leading-9 md:text-3xl" : "text-sm";
+  return appearance === "transparent" ? "text-xl leading-8 md:text-2xl" : "text-xs";
 }
 
 function renderInline(

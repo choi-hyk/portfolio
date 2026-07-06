@@ -30,11 +30,15 @@ type CanvasLandingProps = {
       final: string;
     };
     techFocus: {
-      title: string;
       buildTitle: string;
       buildItems: string[];
       stackTitle: string;
       stacks: string[];
+    };
+    nodeTitles: {
+      profile: string;
+      links: string;
+      techFocus: string;
     };
     canvas: {
       previousNode: string;
@@ -124,14 +128,43 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       ].join("\n"),
     },
     {
+      id: "profile-title",
+      kind: "note",
+      appearance: "transparent",
+      excludeFromSequence: true,
+      x: 13,
+      y: 28,
+      width: 14,
+      markdown: [`### ${home.nodeTitles.profile}`].join("\n"),
+    },
+    {
+      id: "links-title",
+      kind: "note",
+      appearance: "transparent",
+      excludeFromSequence: true,
+      x: 41,
+      y: 28,
+      width: 12,
+      markdown: [`### ${home.nodeTitles.links}`].join("\n"),
+    },
+    {
+      id: "tech-focus-title",
+      kind: "note",
+      appearance: "transparent",
+      excludeFromSequence: true,
+      x: 57,
+      y: 12,
+      width: 18,
+      markdown: [`### ${home.nodeTitles.techFocus}`].join("\n"),
+    },
+    {
       id: "tech-focus",
       kind: "note",
-      excludeFromSequence: true,
+      order: 4,
       x: 57,
       y: 15,
       width: 30,
       markdown: [
-        `## ${home.techFocus.title}`,
         `### ${home.techFocus.buildTitle}`,
         ...home.techFocus.buildItems.map((item) => `- ${item}`),
         "",
@@ -142,12 +175,11 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
     {
       id: "social-links",
       kind: "note",
-      excludeFromSequence: true,
+      order: 3,
       x: 41,
       y: 31,
       width: 10,
       markdown: [
-        "## Links",
         `- :github: [${home.github}](${profile.links.github})`,
         `- :velog: [${home.velog}](${profile.links.velog})`,
         `- :email: [${home.email}](mailto:${profile.email})`,
@@ -176,7 +208,7 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       appearance: "transparent",
       excludeFromSequence: true,
       x: 13,
-      y: 52,
+      y: 54,
       width: 28,
       markdown: [`# ${home.projectSectionTitle}`].join("\n"),
     },
@@ -188,7 +220,7 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
         src: project.iconSrc,
         alt: project.iconAlt,
       },
-      order: 3 + index,
+      order: 5 + index,
       x: index % 2 === 0 ? 13 : 50,
       y: 58 + Math.floor(index / 2) * 22,
       width: 33,
