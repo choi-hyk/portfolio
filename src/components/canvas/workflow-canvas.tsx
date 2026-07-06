@@ -4,6 +4,7 @@ import {
   type CSSProperties,
   type PointerEvent,
   type ReactNode,
+  type TransitionEvent,
   type WheelEvent,
   useCallback,
   useEffect,
@@ -131,6 +132,7 @@ export function WorkflowCanvas({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
+  const [isPanAnimated, setIsPanAnimated] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ width: 1, height: 1 });
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [nodeHeights, setNodeHeights] = useState<CanvasNodeHeights>({});
@@ -197,6 +199,7 @@ export function WorkflowCanvas({
     }
 
     event.preventDefault();
+    setIsPanAnimated(false);
     event.currentTarget.setPointerCapture(event.pointerId);
     dragStartRef.current = {
       pointerX: event.clientX,
@@ -240,6 +243,7 @@ export function WorkflowCanvas({
 
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
+    setIsPanAnimated(false);
     setPan((current) => {
       const nextPan = clampPan(
         {
@@ -259,6 +263,7 @@ export function WorkflowCanvas({
     });
   };
   const handleMiniMapNavigate = (point: CanvasPoint) => {
+    setIsPanAnimated(false);
     const effectiveLeft = Math.min(occludedLeft, canvasSize.width);
     const effectiveWidth = Math.max(1, canvasSize.width - effectiveLeft);
     const nextPan = {
@@ -294,8 +299,14 @@ export function WorkflowCanvas({
       y: canvasSize.height / 2 - nodeCenter.y,
     };
 
+    setIsPanAnimated(true);
     setSelectedNodeId(node.id);
     setPan(clampPan(nextPan, canvasSize, occludedLeft, contentSize));
+  };
+  const handlePanTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+    if (event.currentTarget === event.target && event.propertyName === "transform") {
+      setIsPanAnimated(false);
+    }
   };
   const handleStepFocus = (direction: "previous" | "next") => {
     const currentNodeId =
@@ -335,23 +346,32 @@ export function WorkflowCanvas({
         `workflow-canvas relative overflow-hidden border-0 ${shell.border} ${shell.editor}`,
         isSpacePressed || isPanning ? "cursor-grab active:cursor-grabbing" : "",
       ].join(" ")}
-      style={{
-        backgroundPosition: `${boundedPan.x}px ${boundedPan.y}px`,
-      }}
+      style={{ backgroundImage: "none" }}
     >
       <div
         className={[
           "absolute left-0 top-0",
-          isPanning
-            ? ""
-            : "transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          isPanAnimated
+            ? "transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            : "",
         ].join(" ")}
+        onTransitionEnd={handlePanTransitionEnd}
         style={{
           width: contentSize.width,
           height: contentSize.height,
           transform: `translate3d(${boundedPan.x}px, ${boundedPan.y}px, 0)`,
         }}
       >
+        <div
+          aria-hidden="true"
+          className="workflow-canvas-grid pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(15, 23, 42, 0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 23, 42, 0.055) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+
         <CanvasEdges
           edges={edges}
           nodes={nodes}
