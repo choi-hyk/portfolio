@@ -29,6 +29,13 @@ type CanvasLandingProps = {
       closing: string;
       final: string;
     };
+    techFocus: {
+      title: string;
+      buildTitle: string;
+      buildItems: string[];
+      stackTitle: string;
+      stacks: string[];
+    };
     canvas: {
       previousNode: string;
       nextNode: string;
@@ -114,6 +121,22 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
         home.slogan.closing,
         "",
         home.slogan.final,
+      ].join("\n"),
+    },
+    {
+      id: "tech-focus",
+      kind: "note",
+      excludeFromSequence: true,
+      x: 57,
+      y: 15,
+      width: 30,
+      markdown: [
+        `## ${home.techFocus.title}`,
+        `### ${home.techFocus.buildTitle}`,
+        ...home.techFocus.buildItems.map((item) => `- ${item}`),
+        "",
+        `### ${home.techFocus.stackTitle}`,
+        ...home.techFocus.stacks.map((stack) => `- \`${stack}\``),
       ].join("\n"),
     },
     {

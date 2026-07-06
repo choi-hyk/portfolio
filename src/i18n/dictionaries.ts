@@ -48,6 +48,13 @@ export type Dictionary = {
       closing: string;
       final: string;
     };
+    techFocus: {
+      title: string;
+      buildTitle: string;
+      buildItems: string[];
+      stackTitle: string;
+      stacks: string[];
+    };
     canvas: {
       previousNode: string;
       nextNode: string;
@@ -185,6 +192,18 @@ export const dictionaries: Record<Locale, Dictionary> = {
         closing: "AI를 단순히 사용하는 데서 멈추지 않고, AI와 함께 문제를 해결하는 것.",
         final: "그것이 제가 추구하는 AI 시대의 개발 역량입니다.",
       },
+      techFocus: {
+        title: "관심 분야",
+        buildTitle: "What I Build",
+        buildItems: [
+          "AI Application",
+          "Backend API",
+          "Agent Workflow",
+          "Knowledge Systems",
+        ],
+        stackTitle: "주요 스택",
+        stacks: ["Python", "FastAPI", "TypeScript", "React", "Docker"],
+      },
       canvas: {
         previousNode: "이전 노드",
         nextNode: "다음 노드",
@@ -214,7 +233,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ],
         skills: ["FastAPI", "RAG", "MCP"],
       },
-      projectSectionTitle: "Projects",
+      projectSectionTitle: "프로젝트",
       featuredProjects: [
         {
           title: "HippoBox",
@@ -497,6 +516,18 @@ export const dictionaries: Record<Locale, Dictionary> = {
         closing:
           "Not stopping at simply using AI, but solving problems together with AI.",
         final: "That is the development capability I pursue in the AI era.",
+      },
+      techFocus: {
+        title: "TechFocus",
+        buildTitle: "What I Build",
+        buildItems: [
+          "AI Application",
+          "Backend API",
+          "Agent Workflow",
+          "Knowledge Systems",
+        ],
+        stackTitle: "Primary Stack",
+        stacks: ["Python", "FastAPI", "TypeScript", "React", "Docker"],
       },
       canvas: {
         previousNode: "Previous node",
