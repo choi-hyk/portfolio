@@ -17,6 +17,7 @@ type TooltipProps = {
   content: string;
   placement?: TooltipPlacement;
   className?: string;
+  disableCollision?: boolean;
 };
 
 const tooltipGap = 8;
@@ -27,6 +28,7 @@ export function Tooltip({
   content,
   placement = "top",
   className = "",
+  disableCollision = false,
 }: TooltipProps) {
   const triggerRef = useRef<HTMLSpanElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
@@ -43,13 +45,15 @@ export function Tooltip({
 
     const triggerRect = trigger.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
-    const resolvedPlacement = resolvePlacement(
-      placement,
-      triggerRect,
-      tooltipRect,
-      window.innerWidth,
-      window.innerHeight,
-    );
+    const resolvedPlacement = disableCollision
+      ? placement
+      : resolvePlacement(
+          placement,
+          triggerRect,
+          tooltipRect,
+          window.innerWidth,
+          window.innerHeight,
+        );
     const nextPosition = getTooltipPosition(
       resolvedPlacement,
       triggerRect,
@@ -57,18 +61,22 @@ export function Tooltip({
     );
 
     setPosition({
-      top: clamp(
-        nextPosition.top,
-        viewportMargin,
-        window.innerHeight - tooltipRect.height - viewportMargin,
-      ),
-      left: clamp(
-        nextPosition.left,
-        viewportMargin,
-        window.innerWidth - tooltipRect.width - viewportMargin,
-      ),
+      top: disableCollision
+        ? nextPosition.top
+        : clamp(
+            nextPosition.top,
+            viewportMargin,
+            window.innerHeight - tooltipRect.height - viewportMargin,
+          ),
+      left: disableCollision
+        ? nextPosition.left
+        : clamp(
+            nextPosition.left,
+            viewportMargin,
+            window.innerWidth - tooltipRect.width - viewportMargin,
+          ),
     });
-  }, [placement]);
+  }, [disableCollision, placement]);
 
   useLayoutEffect(() => {
     if (!visible) {

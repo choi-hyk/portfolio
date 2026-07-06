@@ -9,6 +9,7 @@ export default function ProjectsPage() {
     <main className="min-h-screen bg-white text-zinc-700">
       <ProjectOverviewCanvas
         projects={dictionary.projects}
+        projectsPage={dictionary.projectsPage}
         canvasLabels={dictionary.home.canvas}
       />
     </main>

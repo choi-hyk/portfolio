@@ -154,6 +154,7 @@ export type Dictionary = {
     eyebrow: string;
     title: string;
     description: string;
+    note: string;
   };
   writingPage: {
     eyebrow: string;
@@ -407,9 +408,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     projectsPage: {
       eyebrow: "Projects",
-      title: "포트폴리오에 노출할 프로젝트 목록",
+      title:
+        "저는 **지식을 효과적으로 저장하고 활용할 수 있는 시스템**과 **AI 워크플로우**를 만드는 데 관심이 있습니다.",
       description:
-        "각 프로젝트는 문제 정의, 역할, 기술 선택 이유, 결과 화면을 추가하면서 상세 페이지로 확장할 예정입니다.",
+        "**FastAPI 기반의 백엔드**를 중심으로 **RAG**, **Agent Workflow**, **자동화 시스템**을 구현하며,\n**AI를 실제 서비스에 자연스럽게 녹여내는 개발**을 지향합니다.",
+      note:
+        "이 페이지에서는 이러한 관심사를 바탕으로 진행한 주요 프로젝트들을 소개합니다.\n자세한 개발 과정과 프로젝트 내용은 프로젝트별 상세 페이지에서 확인할 수 있습니다.",
     },
     writingPage: {
       eyebrow: "Writing",
@@ -746,9 +750,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     projectsPage: {
       eyebrow: "Projects",
-      title: "Portfolio project list",
+      title:
+        "I am interested in building **systems for storing and applying knowledge effectively** and **AI-based workflows**.",
       description:
-        "Each project can later expand into a detailed page with problem definition, role, technical choices, and screenshots.",
+        "On **FastAPI-based backends**, I design **RAG**, **Agent Workflow**, and **automation systems**, focusing on **applying AI reliably to real services**.",
+      note:
+        "This page introduces the main projects I have built around these interests.\nYou can open each project detail page for the development process.",
     },
     writingPage: {
       eyebrow: "Writing",

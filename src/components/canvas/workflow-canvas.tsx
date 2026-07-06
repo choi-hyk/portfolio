@@ -8,9 +8,12 @@ import {
   BookOpenText,
   Braces,
   Building2,
+  CalendarDays,
   Code2,
+  Globe,
   GraduationCap,
   Mail,
+  Package,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -42,6 +45,9 @@ export type CanvasNodeKind = "note" | "code" | "mermaid" | "mention";
 export type CanvasNode = {
   id: string;
   kind: CanvasNodeKind;
+  title?: string;
+  titleHref?: string;
+  titleTooltip?: string;
   appearance?: "default" | "transparent";
   icon?: {
     src: string;
@@ -1068,10 +1074,43 @@ function MarkdownNode({
         ? undefined
         : `${animationOrder * NODE_REVEAL_STEP_MS}ms`,
   } as CSSProperties;
-  const nodeClassName = `workflow-node ${appearance}`;
+  const nodeClassName = `workflow-node relative ${appearance}`;
   const nodeContent = (
-    <div className={node.icon ? "flex items-start gap-3" : undefined}>
-      {node.icon ? (
+    <div className={node.icon && !node.title ? "flex items-start gap-3" : undefined}>
+      {node.title && node.appearance !== "transparent" ? (
+        <div className="absolute -top-14 left-0 flex items-center gap-2 text-xl font-semibold leading-8 tracking-tight text-zinc-950 md:text-2xl">
+          {node.icon ? (
+            <span className="pointer-events-none flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white shadow-sm">
+              <Image
+                src={node.icon.src}
+                alt={node.icon.alt}
+                width={30}
+                height={30}
+                unoptimized
+                className="h-[30px] w-[30px]"
+              />
+            </span>
+          ) : null}
+          <span className="pointer-events-none">{node.title}</span>
+          {node.titleHref ? (
+            <Tooltip
+              content={node.titleTooltip ?? node.title}
+              placement="right"
+              className="pointer-events-auto"
+              disableCollision
+            >
+              <Link
+                href={node.titleHref}
+                onClick={(event) => event.stopPropagation()}
+                className="inline-flex h-7 items-center rounded-full border border-teal-200 bg-white/90 px-2 text-xs font-semibold text-teal-800 shadow-sm transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-950"
+              >
+                Project Details →
+              </Link>
+            </Tooltip>
+          ) : null}
+        </div>
+      ) : null}
+      {node.icon && !node.title ? (
         <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white">
           <Image
             src={node.icon.src}
@@ -1083,12 +1122,14 @@ function MarkdownNode({
           />
         </div>
       ) : null}
-      <MarkdownBody
-        markdown={node.markdown}
-        kind={node.kind}
-        shell={shell}
-        appearance={node.appearance ?? "default"}
-      />
+      {node.markdown.trim() ? (
+        <MarkdownBody
+          markdown={node.markdown}
+          kind={node.kind}
+          shell={shell}
+          appearance={node.appearance ?? "default"}
+        />
+      ) : null}
     </div>
   );
 
@@ -1160,14 +1201,19 @@ function MarkdownBody({ markdown, kind, shell, appearance }: MarkdownBodyProps) 
                 item.startsWith(":writing:") ||
                 item.startsWith(":github:") ||
                 item.startsWith(":velog:") ||
-                item.startsWith(":email:"),
+                item.startsWith(":email:") ||
+                item.startsWith(":calendar:") ||
+                item.startsWith(":package:") ||
+                item.startsWith(":website:"),
             )
           ) {
             return (
               <ul key={`${block.raw}-${index}`} className="space-y-2">
                 {block.items.map((item) => (
-                  <li key={item} className="flex min-h-6 items-center gap-2">
-                    {renderInline(item, shell, kind)}
+                  <li key={item} className="flex min-h-6 items-center gap-3">
+                    <span className="flex min-w-0 items-center">
+                      {renderInline(item, shell, kind)}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -1392,7 +1438,7 @@ function renderInline(
 ): ReactNode {
   const parts = text
     .split(
-      /(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|`[^`]+`|@\w[\w-]*|:(?:school|company|stack|project|writing|github|velog|email):)/g,
+      /(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|`[^`]+`|@\w[\w-]*|:(?:school|company|stack|project|writing|github|velog|email|calendar|package|website):)/g,
     )
     .filter(Boolean);
 
@@ -1440,7 +1486,10 @@ function renderInline(
       part === ":writing:" ||
       part === ":github:" ||
       part === ":velog:" ||
-      part === ":email:"
+      part === ":email:" ||
+      part === ":calendar:" ||
+      part === ":package:" ||
+      part === ":website:"
     ) {
       const Icon =
         part === ":school:"
@@ -1457,14 +1506,20 @@ function renderInline(
                     ? VelogIcon
                     : part === ":email:"
                       ? Mail
-                      : Code2;
+                      : part === ":calendar:"
+                        ? CalendarDays
+                        : part === ":package:"
+                          ? Package
+                          : part === ":website:"
+                            ? Globe
+                            : Code2;
 
       return (
         <Icon
           key={`${part}-${index}`}
           aria-hidden="true"
           size={15}
-          className={`mr-1.5 inline-block align-[-2px] ${shell.accent}`}
+          className={`mr-3 inline-block w-4 shrink-0 align-[-2px] ${shell.accent}`}
         />
       );
     }
@@ -1481,7 +1536,7 @@ function renderInline(
       return (
         <code
           key={`${part}-${index}`}
-          className={`rounded px-1.5 py-0.5 font-mono text-xs ${
+          className={`mr-1.5 rounded px-1.5 py-0.5 font-mono text-xs ${
             kind === "code"
               ? "bg-white/10 text-white"
               : `${shell.accentBg} ${shell.accent}`
