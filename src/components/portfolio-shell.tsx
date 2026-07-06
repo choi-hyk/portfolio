@@ -40,7 +40,7 @@ type SidebarSection = {
   children?: SidebarChild[];
 };
 
-const sidebarProjectLimit = 3;
+const sidebarProjectLimit = 4;
 
 export function PortfolioShell({
   children,
