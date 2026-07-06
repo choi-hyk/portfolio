@@ -23,6 +23,7 @@ import {
 import Image from "next/image";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { VelogIcon } from "@/components/icons/velog-icon";
+import { usePortfolioViewport } from "@/components/portfolio-viewport-context";
 import { Tooltip } from "@/components/tooltip";
 
 type CanvasPoint = {
@@ -86,6 +87,8 @@ export type WorkflowCanvasLabels = {
   focusNextNode: string;
   moveViewport: string;
   focusNode: string;
+  zoomIn: string;
+  zoomOut: string;
 };
 
 type WorkflowCanvasProps = {
@@ -105,6 +108,12 @@ const CANVAS_EXPANSION_PADDING = 160;
 const NODE_REVEAL_STEP_MS = 260;
 const EDGE_REVEAL_STEP_MS = 120;
 const EDGE_REVEAL_OFFSET_MS = 320;
+const MIN_ZOOM = 0.7;
+const MAX_ZOOM = 1.5;
+const ZOOM_STEP = 0.1;
+const DEFAULT_ZOOM = 0.7;
+const INITIAL_CONTENT_GAP = 16;
+const INITIAL_CONTENT_TOP = 24;
 const defaultCanvasLabels: WorkflowCanvasLabels = {
   previousNode: "Previous node",
   nextNode: "Next node",
@@ -112,6 +121,8 @@ const defaultCanvasLabels: WorkflowCanvasLabels = {
   focusNextNode: "Focus next node",
   moveViewport: "Move canvas viewport",
   focusNode: "Focus {node} node",
+  zoomIn: "Zoom in",
+  zoomOut: "Zoom out",
 };
 
 export function WorkflowCanvas({
@@ -120,9 +131,13 @@ export function WorkflowCanvas({
   edges,
   shell,
   labels = defaultCanvasLabels,
-  occludedLeft = 0,
+  occludedLeft,
 }: WorkflowCanvasProps) {
+  const portfolioViewport = usePortfolioViewport();
+  const effectiveOccludedLeft = occludedLeft ?? portfolioViewport.occludedLeft;
+  const isOcclusionReady = occludedLeft !== undefined || portfolioViewport.ready;
   const canvasRef = useRef<HTMLDivElement>(null);
+  const hasInitializedViewportRef = useRef(false);
   const dragStartRef = useRef<{
     pointerX: number;
     pointerY: number;
@@ -130,6 +145,7 @@ export function WorkflowCanvas({
     panY: number;
   } | null>(null);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [isPanAnimated, setIsPanAnimated] = useState(false);
@@ -140,14 +156,78 @@ export function WorkflowCanvas({
     () => getCanvasContentSize(nodes, nodeHeights),
     [nodes, nodeHeights],
   );
-  const boundedPan = clampPan(pan, canvasSize, occludedLeft, contentSize);
+  const boundedPan = clampPan(
+    pan,
+    canvasSize,
+    effectiveOccludedLeft,
+    contentSize,
+    zoom,
+  );
   const nodeAnimationOrder = getCanvasRenderOrder(nodes);
   const orderedNodes = getCanvasOrderedNodes(nodes);
   const edgeAnimationBaseDelay =
     nodes.length * NODE_REVEAL_STEP_MS + EDGE_REVEAL_OFFSET_MS;
 
+  const updateZoom = useCallback(
+    (nextZoom: number, anchor?: CanvasPoint) => {
+      const boundedNextZoom = normalizeZoom(nextZoom);
+
+      if (boundedNextZoom === zoom) {
+        return;
+      }
+
+      const zoomAnchor = anchor ?? getViewportCenter(canvasSize, effectiveOccludedLeft);
+      const nextPan = {
+        x: zoomAnchor.x - ((zoomAnchor.x - boundedPan.x) / zoom) * boundedNextZoom,
+        y: zoomAnchor.y - ((zoomAnchor.y - boundedPan.y) / zoom) * boundedNextZoom,
+      };
+      const boundedNextPan = clampPan(
+        nextPan,
+        canvasSize,
+        effectiveOccludedLeft,
+        contentSize,
+        boundedNextZoom,
+      );
+
+      setIsPanAnimated(false);
+      setZoom(boundedNextZoom);
+      setPan(boundedNextPan);
+      setSelectedNodeId(
+        getViewportFocusedNodeId(
+          nodes,
+          boundedNextPan,
+          canvasSize,
+          effectiveOccludedLeft,
+          nodeHeights,
+          boundedNextZoom,
+        ),
+      );
+    },
+    [
+      boundedPan,
+      canvasSize,
+      contentSize,
+      nodeHeights,
+      nodes,
+      effectiveOccludedLeft,
+      zoom,
+    ],
+  );
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && !isEditableTarget(event.target)) {
+        const isZoomIn =
+          event.key === "+" || event.key === "=" || event.code === "NumpadAdd";
+        const isZoomOut = event.key === "-" || event.code === "NumpadSubtract";
+
+        if (isZoomIn || isZoomOut) {
+          event.preventDefault();
+          updateZoom(zoom + (isZoomIn ? ZOOM_STEP : -ZOOM_STEP));
+          return;
+        }
+      }
+
       if (event.code === "Space" && !isEditableTarget(event.target)) {
         event.preventDefault();
         setIsSpacePressed(true);
@@ -168,7 +248,7 @@ export function WorkflowCanvas({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [updateZoom, zoom]);
 
   const handleNodeResize = useCallback((nodeId: string, height: number) => {
     setNodeHeights((current) =>
@@ -192,6 +272,36 @@ export function WorkflowCanvas({
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (
+      hasInitializedViewportRef.current ||
+      !isOcclusionReady ||
+      canvasSize.width <= 1 ||
+      canvasSize.height <= 1 ||
+      nodes.some((node) => nodeHeights[node.id] === undefined)
+    ) {
+      return;
+    }
+
+    const initialPan = getInitialViewportPan(
+      nodes,
+      nodeHeights,
+      canvasSize,
+      effectiveOccludedLeft,
+      contentSize,
+    );
+
+    hasInitializedViewportRef.current = true;
+    setPan(initialPan);
+  }, [
+    canvasSize,
+    contentSize,
+    effectiveOccludedLeft,
+    isOcclusionReady,
+    nodeHeights,
+    nodes,
+  ]);
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (!isSpacePressed) {
@@ -222,13 +332,21 @@ export function WorkflowCanvas({
         y: dragStartRef.current.panY + event.clientY - dragStartRef.current.pointerY,
       },
       canvasSize,
-      occludedLeft,
+      effectiveOccludedLeft,
       contentSize,
+      zoom,
     );
 
     setPan(nextPan);
     setSelectedNodeId(
-      getViewportFocusedNodeId(nodes, nextPan, canvasSize, occludedLeft, nodeHeights),
+      getViewportFocusedNodeId(
+        nodes,
+        nextPan,
+        canvasSize,
+        effectiveOccludedLeft,
+        nodeHeights,
+        zoom,
+      ),
     );
   };
 
@@ -243,6 +361,17 @@ export function WorkflowCanvas({
 
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
+
+    if (event.ctrlKey || event.metaKey) {
+      const rect = event.currentTarget.getBoundingClientRect();
+
+      updateZoom(zoom - event.deltaY * 0.001, {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
+      return;
+    }
+
     setIsPanAnimated(false);
     setPan((current) => {
       const nextPan = clampPan(
@@ -251,12 +380,20 @@ export function WorkflowCanvas({
           y: current.y - event.deltaY,
         },
         canvasSize,
-        occludedLeft,
+        effectiveOccludedLeft,
         contentSize,
+        zoom,
       );
 
       setSelectedNodeId(
-        getViewportFocusedNodeId(nodes, nextPan, canvasSize, occludedLeft, nodeHeights),
+        getViewportFocusedNodeId(
+          nodes,
+          nextPan,
+          canvasSize,
+          effectiveOccludedLeft,
+          nodeHeights,
+          zoom,
+        ),
       );
 
       return nextPan;
@@ -264,14 +401,20 @@ export function WorkflowCanvas({
   };
   const handleMiniMapNavigate = (point: CanvasPoint) => {
     setIsPanAnimated(false);
-    const effectiveLeft = Math.min(occludedLeft, canvasSize.width);
+    const effectiveLeft = Math.min(effectiveOccludedLeft, canvasSize.width);
     const effectiveWidth = Math.max(1, canvasSize.width - effectiveLeft);
     const nextPan = {
-      x: effectiveLeft - point.x * contentSize.width + effectiveWidth / 2,
-      y: -point.y * contentSize.height + canvasSize.height / 2,
+      x: effectiveLeft - point.x * contentSize.width * zoom + effectiveWidth / 2,
+      y: -point.y * contentSize.height * zoom + canvasSize.height / 2,
     };
 
-    const boundedNextPan = clampPan(nextPan, canvasSize, occludedLeft, contentSize);
+    const boundedNextPan = clampPan(
+      nextPan,
+      canvasSize,
+      effectiveOccludedLeft,
+      contentSize,
+      zoom,
+    );
 
     setPan(boundedNextPan);
     setSelectedNodeId(
@@ -279,8 +422,9 @@ export function WorkflowCanvas({
         nodes,
         boundedNextPan,
         canvasSize,
-        occludedLeft,
+        effectiveOccludedLeft,
         nodeHeights,
+        zoom,
       ),
     );
   };
@@ -294,14 +438,15 @@ export function WorkflowCanvas({
       x: nodeBox.x + nodeBox.width / 2,
       y: nodeBox.y + nodeBox.height / 2,
     };
+    const viewportCenter = getViewportCenter(canvasSize, effectiveOccludedLeft);
     const nextPan = {
-      x: canvasSize.width / 2 - nodeCenter.x,
-      y: canvasSize.height / 2 - nodeCenter.y,
+      x: viewportCenter.x - nodeCenter.x * zoom,
+      y: viewportCenter.y - nodeCenter.y * zoom,
     };
 
     setIsPanAnimated(true);
     setSelectedNodeId(node.id);
-    setPan(clampPan(nextPan, canvasSize, occludedLeft, contentSize));
+    setPan(clampPan(nextPan, canvasSize, effectiveOccludedLeft, contentSize, zoom));
   };
   const handlePanTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
     if (event.currentTarget === event.target && event.propertyName === "transform") {
@@ -315,8 +460,9 @@ export function WorkflowCanvas({
         nodes,
         boundedPan,
         canvasSize,
-        occludedLeft,
+        effectiveOccludedLeft,
         nodeHeights,
+        zoom,
       ) ??
       orderedNodes[0]?.id;
     const currentIndex = orderedNodes.findIndex((node) => node.id === currentNodeId);
@@ -346,7 +492,15 @@ export function WorkflowCanvas({
         `workflow-canvas relative overflow-hidden border-0 ${shell.border} ${shell.editor}`,
         isSpacePressed || isPanning ? "cursor-grab active:cursor-grabbing" : "",
       ].join(" ")}
-      style={{ backgroundImage: "none" }}
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(15, 23, 42, 0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 23, 42, 0.055) 1px, transparent 1px)",
+        backgroundPosition: `${boundedPan.x}px ${boundedPan.y}px`,
+        backgroundSize: `${32 * zoom}px ${32 * zoom}px`,
+        transition: isPanAnimated
+          ? "background-position 500ms cubic-bezier(0.22, 1, 0.36, 1), background-size 500ms cubic-bezier(0.22, 1, 0.36, 1)"
+          : "none",
+      }}
     >
       <div
         className={[
@@ -359,19 +513,10 @@ export function WorkflowCanvas({
         style={{
           width: contentSize.width,
           height: contentSize.height,
-          transform: `translate3d(${boundedPan.x}px, ${boundedPan.y}px, 0)`,
+          transform: `translate3d(${boundedPan.x}px, ${boundedPan.y}px, 0) scale(${zoom})`,
+          transformOrigin: "top left",
         }}
       >
-        <div
-          aria-hidden="true"
-          className="workflow-canvas-grid pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(15, 23, 42, 0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 23, 42, 0.055) 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-
         <CanvasEdges
           edges={edges}
           nodes={nodes}
@@ -396,16 +541,25 @@ export function WorkflowCanvas({
         </div>
       </div>
 
-      <CanvasMiniMap
-        nodes={nodes}
-        nodeHeights={nodeHeights}
-        pan={boundedPan}
-        viewportSize={canvasSize}
-        canvasSize={contentSize}
-        occludedLeft={occludedLeft}
-        onNavigate={handleMiniMapNavigate}
-        labels={labels}
-      />
+      <div className="absolute bottom-4 right-4 z-20 flex items-end gap-2">
+        <CanvasZoomControls
+          zoom={zoom}
+          onZoomIn={() => updateZoom(zoom + ZOOM_STEP)}
+          onZoomOut={() => updateZoom(zoom - ZOOM_STEP)}
+          labels={labels}
+        />
+        <CanvasMiniMap
+          nodes={nodes}
+          nodeHeights={nodeHeights}
+          pan={boundedPan}
+          zoom={zoom}
+          viewportSize={canvasSize}
+          canvasSize={contentSize}
+          occludedLeft={effectiveOccludedLeft}
+          onNavigate={handleMiniMapNavigate}
+          labels={labels}
+        />
+      </div>
       <CanvasStepControls
         currentIndex={Math.max(
           0,
@@ -416,6 +570,60 @@ export function WorkflowCanvas({
         onNext={() => handleStepFocus("next")}
         labels={labels}
       />
+    </div>
+  );
+}
+
+type CanvasZoomControlsProps = {
+  zoom: number;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  labels: WorkflowCanvasLabels;
+};
+
+function CanvasZoomControls({
+  zoom,
+  onZoomIn,
+  onZoomOut,
+  labels,
+}: CanvasZoomControlsProps) {
+  const buttonClass =
+    "flex h-9 w-9 items-center justify-center text-lg font-medium transition";
+  const enabledClass = "text-zinc-700 hover:bg-teal-50 hover:text-teal-900";
+  const disabledClass = "cursor-default text-zinc-300";
+  const isZoomInDisabled = zoom >= MAX_ZOOM;
+  const isZoomOutDisabled = zoom <= MIN_ZOOM;
+
+  return (
+    <div className="overflow-hidden rounded-md border border-teal-200 bg-white/90 shadow-md shadow-teal-900/10 backdrop-blur">
+      <Tooltip content={labels.zoomIn} placement="left">
+        <button
+          type="button"
+          aria-label={labels.zoomIn}
+          disabled={isZoomInDisabled}
+          onClick={onZoomIn}
+          className={`${buttonClass} ${isZoomInDisabled ? disabledClass : enabledClass}`}
+        >
+          <span aria-hidden="true">+</span>
+        </button>
+      </Tooltip>
+      <div
+        aria-live="polite"
+        className="border-y border-zinc-200 px-1 py-1 text-center text-[10px] font-medium text-zinc-500"
+      >
+        {Math.round(zoom * 100)}%
+      </div>
+      <Tooltip content={labels.zoomOut} placement="left">
+        <button
+          type="button"
+          aria-label={labels.zoomOut}
+          disabled={isZoomOutDisabled}
+          onClick={onZoomOut}
+          className={`${buttonClass} ${isZoomOutDisabled ? disabledClass : enabledClass}`}
+        >
+          <span aria-hidden="true">−</span>
+        </button>
+      </Tooltip>
     </div>
   );
 }
@@ -485,6 +693,7 @@ type CanvasMiniMapProps = {
   nodes: CanvasNode[];
   nodeHeights: CanvasNodeHeights;
   pan: CanvasPoint;
+  zoom: number;
   viewportSize: {
     width: number;
     height: number;
@@ -502,6 +711,7 @@ function CanvasMiniMap({
   nodes,
   nodeHeights,
   pan,
+  zoom,
   viewportSize,
   canvasSize,
   occludedLeft,
@@ -511,15 +721,23 @@ function CanvasMiniMap({
   const miniMapRef = useRef<HTMLDivElement>(null);
   const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
   const effectiveWidth = Math.max(1, viewportSize.width - effectiveLeft);
-  const viewportWidth = clamp((effectiveWidth / canvasSize.width) * 100, 8, 100);
-  const viewportHeight = clamp((viewportSize.height / canvasSize.height) * 100, 8, 100);
+  const viewportWidth = clamp(
+    (effectiveWidth / (canvasSize.width * zoom)) * 100,
+    8,
+    100,
+  );
+  const viewportHeight = clamp(
+    (viewportSize.height / (canvasSize.height * zoom)) * 100,
+    8,
+    100,
+  );
   const viewport = {
     x: clamp(
-      ((-pan.x + effectiveLeft) / canvasSize.width) * 100,
+      ((-pan.x + effectiveLeft) / (canvasSize.width * zoom)) * 100,
       0,
       100 - viewportWidth,
     ),
-    y: clamp((-pan.y / canvasSize.height) * 100, 0, 100 - viewportHeight),
+    y: clamp((-pan.y / (canvasSize.height * zoom)) * 100, 0, 100 - viewportHeight),
     width: viewportWidth,
     height: viewportHeight,
   };
@@ -557,7 +775,7 @@ function CanvasMiniMap({
           onNavigate({ x: 0.5, y: 0.5 });
         }
       }}
-      className="absolute bottom-4 right-4 z-20 h-28 w-40 cursor-pointer rounded-md border border-teal-200 bg-white/90 p-2 shadow-md shadow-teal-900/10 backdrop-blur transition hover:border-teal-300"
+      className="h-28 w-40 cursor-pointer rounded-md border border-teal-200 bg-white/90 p-2 shadow-md shadow-teal-900/10 backdrop-blur transition hover:border-teal-300"
     >
       <svg
         aria-hidden="true"
@@ -1268,16 +1486,64 @@ function clampPan(
   viewportSize: CanvasSize,
   occludedLeft: number,
   contentSize: CanvasSize,
+  zoom: number,
 ) {
   const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
-  const minX = Math.min(0, viewportSize.width - contentSize.width);
-  const maxX = effectiveLeft;
-  const minY = Math.min(0, viewportSize.height - contentSize.height);
-  const maxY = 0;
+  const effectiveWidth = Math.max(1, viewportSize.width - effectiveLeft);
+  const scaledWidth = contentSize.width * zoom;
+  const scaledHeight = contentSize.height * zoom;
+  const centeredX = effectiveLeft + (effectiveWidth - scaledWidth) / 2;
+  const centeredY = (viewportSize.height - scaledHeight) / 2;
+  const minX =
+    scaledWidth <= effectiveWidth ? centeredX : viewportSize.width - scaledWidth;
+  const maxX = scaledWidth <= effectiveWidth ? centeredX : effectiveLeft;
+  const minY =
+    scaledHeight <= viewportSize.height
+      ? centeredY
+      : viewportSize.height - scaledHeight;
+  const maxY = scaledHeight <= viewportSize.height ? centeredY : 0;
 
   return {
     x: clamp(pan.x, minX, maxX),
     y: clamp(pan.y, minY, maxY),
+  };
+}
+
+function normalizeZoom(zoom: number) {
+  return Math.round(clamp(zoom, MIN_ZOOM, MAX_ZOOM) * 100) / 100;
+}
+
+function getInitialViewportPan(
+  nodes: CanvasNode[],
+  nodeHeights: CanvasNodeHeights,
+  viewportSize: CanvasSize,
+  occludedLeft: number,
+  contentSize: CanvasSize,
+) {
+  const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
+  const nodeBoxes = nodes.map((node) => getNodeBox(node, nodeHeights));
+  const firstContentX = Math.min(...nodeBoxes.map((box) => box.x));
+  const firstContentY = Math.min(...nodeBoxes.map((box) => box.y));
+
+  return clampPan(
+    {
+      x: effectiveLeft + INITIAL_CONTENT_GAP - firstContentX * DEFAULT_ZOOM,
+      y: INITIAL_CONTENT_TOP - firstContentY * DEFAULT_ZOOM,
+    },
+    viewportSize,
+    occludedLeft,
+    contentSize,
+    DEFAULT_ZOOM,
+  );
+}
+
+function getViewportCenter(viewportSize: CanvasSize, occludedLeft: number) {
+  const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
+  const effectiveWidth = Math.max(1, viewportSize.width - effectiveLeft);
+
+  return {
+    x: effectiveLeft + effectiveWidth / 2,
+    y: viewportSize.height / 2,
   };
 }
 
@@ -1326,12 +1592,12 @@ function getViewportFocusedNodeId(
   viewportSize: { width: number; height: number },
   occludedLeft: number,
   nodeHeights: CanvasNodeHeights,
+  zoom: number,
 ) {
-  const effectiveLeft = Math.min(occludedLeft, viewportSize.width);
-  const effectiveWidth = Math.max(1, viewportSize.width - effectiveLeft);
+  const screenCenter = getViewportCenter(viewportSize, occludedLeft);
   const viewportCenter = {
-    x: -pan.x + effectiveLeft + effectiveWidth / 2,
-    y: -pan.y + viewportSize.height / 2,
+    x: (screenCenter.x - pan.x) / zoom,
+    y: (screenCenter.y - pan.y) / zoom,
   };
 
   return [...nodes]

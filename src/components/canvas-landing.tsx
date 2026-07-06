@@ -36,6 +36,8 @@ type CanvasLandingProps = {
       focusNextNode: string;
       moveViewport: string;
       focusNode: string;
+      zoomIn: string;
+      zoomOut: string;
     };
     profileCard: {
       koreanName: string;

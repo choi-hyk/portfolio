@@ -14,6 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { GithubIcon } from "@/components/icons/github-icon";
+import { PortfolioViewportProvider } from "@/components/portfolio-viewport-context";
 import { VelogIcon } from "@/components/icons/velog-icon";
 import { Tooltip } from "@/components/tooltip";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -54,20 +55,22 @@ export function PortfolioShell({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
-    <section className="relative min-h-screen bg-white text-zinc-700">
-      <aside className="fixed bottom-3 left-3 top-3 z-30 hidden lg:block">
-        <PortfolioSidebar
-          collapsed={isSidebarCollapsed}
-          navigation={navigation}
-          profile={profile}
-          linkLabels={linkLabels}
-          projects={projects}
-          experiences={experiences}
-          onToggle={() => setIsSidebarCollapsed((value) => !value)}
-        />
-      </aside>
-      <div className="min-w-0">{children}</div>
-    </section>
+    <PortfolioViewportProvider>
+      <section className="relative min-h-screen bg-white text-zinc-700">
+        <aside className="fixed bottom-3 left-3 top-3 z-30 hidden lg:block">
+          <PortfolioSidebar
+            collapsed={isSidebarCollapsed}
+            navigation={navigation}
+            profile={profile}
+            linkLabels={linkLabels}
+            projects={projects}
+            experiences={experiences}
+            onToggle={() => setIsSidebarCollapsed((value) => !value)}
+          />
+        </aside>
+        <div className="min-w-0">{children}</div>
+      </section>
+    </PortfolioViewportProvider>
   );
 }
 

@@ -66,6 +66,8 @@ export type Dictionary = {
       focusNextNode: string;
       moveViewport: string;
       focusNode: string;
+      zoomIn: string;
+      zoomOut: string;
     };
     profileCard: {
       koreanName: string;
@@ -224,6 +226,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         focusNextNode: "다음 노드로 이동",
         moveViewport: "캔버스 보기 영역 이동",
         focusNode: "{node} 노드로 이동",
+        zoomIn: "캔버스 확대",
+        zoomOut: "캔버스 축소",
       },
       profileCard: {
         koreanName: "최혁",
@@ -586,6 +590,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         focusNextNode: "Focus next node",
         moveViewport: "Move canvas viewport",
         focusNode: "Focus {node} node",
+        zoomIn: "Zoom in canvas",
+        zoomOut: "Zoom out canvas",
       },
       profileCard: {
         koreanName: "최혁",
