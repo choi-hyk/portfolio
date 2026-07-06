@@ -78,7 +78,13 @@ export type Dictionary = {
       }>;
       skills: string[];
     };
+    overviewSummary: {
+      title: string;
+      items: string[];
+    };
     projectSectionTitle: string;
+    experienceSectionTitle: string;
+    writingSectionTitle: string;
     featuredProjects: Array<{
       title: string;
       description: string;
@@ -87,6 +93,17 @@ export type Dictionary = {
       iconSrc: string;
       iconAlt: string;
     }>;
+    featuredExperience: {
+      title: string;
+      description: string;
+      highlights: string[];
+      stack: string[];
+    };
+    featuredWriting: {
+      title: string;
+      description: string;
+      articles: string[];
+    };
     primaryCta: string;
     secondaryCta: string;
     flow: Array<{
@@ -227,7 +244,17 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ],
         skills: ["FastAPI", "RAG", "MCP"],
       },
+      overviewSummary: {
+        title: "Proof of Work",
+        items: [
+          ":project: 대표 프로젝트 4개",
+          ":company: Synapsoft FastAPI/RAG 서비스 개발",
+          ":writing: Velog 기술 글 3개",
+        ],
+      },
       projectSectionTitle: "Projects",
+      experienceSectionTitle: "Experience",
+      writingSectionTitle: "Writing",
       featuredProjects: [
         {
           title: "HippoBox",
@@ -275,6 +302,27 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "Today in Tech 아이콘",
         },
       ],
+      featuredExperience: {
+        title: "Synapsoft",
+        description:
+          "FastAPI와 RAG 기반 서비스 개발에 참여하며 Python 백엔드와 LLM 기능 흐름을 경험했습니다.",
+        highlights: [
+          "FastAPI 기반 API 개발 및 유지보수",
+          "RAG 기반 기능 개발 참여",
+          "LLM 기능의 데이터 처리와 응답 품질 개선 흐름 경험",
+        ],
+        stack: ["Python", "FastAPI", "RAG", "LLM"],
+      },
+      featuredWriting: {
+        title: "Velog",
+        description:
+          "프로젝트를 만들며 마주친 문제와 기술 선택 이유를 개발 글로 정리합니다.",
+        articles: [
+          "HippoBox 시작하기",
+          "FastAPI sync/async 구조",
+          "Velog Backup 프로그램 만들기",
+        ],
+      },
       primaryCta: "핵심 프로젝트 보기",
       secondaryCta: "기술 기록 보기",
       flow: [
@@ -558,7 +606,17 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ],
         skills: ["FastAPI", "RAG", "MCP"],
       },
+      overviewSummary: {
+        title: "Proof of Work",
+        items: [
+          ":project: 4 featured projects",
+          ":company: FastAPI/RAG service development at Synapsoft",
+          ":writing: 3 technical Velog articles",
+        ],
+      },
       projectSectionTitle: "Projects",
+      experienceSectionTitle: "Experience",
+      writingSectionTitle: "Writing",
       featuredProjects: [
         {
           title: "HippoBox",
@@ -605,6 +663,27 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "Today in Tech icon",
         },
       ],
+      featuredExperience: {
+        title: "Synapsoft",
+        description:
+          "Worked on FastAPI and RAG-based service development, gaining experience in Python backend systems and LLM feature flows.",
+        highlights: [
+          "Developed and maintained FastAPI-based APIs",
+          "Participated in RAG-based feature development",
+          "Worked on LLM data processing and response quality improvement flows",
+        ],
+        stack: ["Python", "FastAPI", "RAG", "LLM"],
+      },
+      featuredWriting: {
+        title: "Velog",
+        description:
+          "I document project problems, technical decisions, and implementation notes as technical writing.",
+        articles: [
+          "Getting started with HippoBox",
+          "FastAPI sync/async structure",
+          "Building a Velog backup program",
+        ],
+      },
       primaryCta: "View core projects",
       secondaryCta: "Read technical notes",
       flow: [

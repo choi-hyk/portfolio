@@ -5,6 +5,13 @@ import {
 } from "@/components/canvas/workflow-canvas";
 
 type CanvasLandingProps = {
+  profile: {
+    email: string;
+    links: {
+      github: string;
+      velog: string;
+    };
+  };
   home: {
     eyebrow: string;
     title: string;
@@ -41,7 +48,13 @@ type CanvasLandingProps = {
       }>;
       skills: string[];
     };
+    overviewSummary: {
+      title: string;
+      items: string[];
+    };
     projectSectionTitle: string;
+    experienceSectionTitle: string;
+    writingSectionTitle: string;
     featuredProjects: Array<{
       title: string;
       description: string;
@@ -50,6 +63,17 @@ type CanvasLandingProps = {
       iconSrc: string;
       iconAlt: string;
     }>;
+    featuredExperience: {
+      title: string;
+      description: string;
+      highlights: string[];
+      stack: string[];
+    };
+    featuredWriting: {
+      title: string;
+      description: string;
+      articles: string[];
+    };
     flow: Array<{
       label: string;
       title: string;
@@ -73,7 +97,7 @@ type CanvasLandingProps = {
   };
 };
 
-export function CanvasLanding({ home }: CanvasLandingProps) {
+export function CanvasLanding({ home, profile }: CanvasLandingProps) {
   const shell = {
     page: "bg-white text-zinc-700",
     border: "border-zinc-200",
@@ -89,6 +113,7 @@ export function CanvasLanding({ home }: CanvasLandingProps) {
       id: "slogan",
       kind: "note",
       appearance: "transparent",
+      order: 1,
       x: 13,
       y: 7,
       width: 38,
@@ -107,8 +132,23 @@ export function CanvasLanding({ home }: CanvasLandingProps) {
       ].join("\n"),
     },
     {
+      id: "social-links",
+      kind: "note",
+      excludeFromSequence: true,
+      x: 78,
+      y: 10,
+      width: 10,
+      markdown: [
+        "## Links",
+        `- :github: [${home.github}](${profile.links.github})`,
+        `- :velog: [${home.velog}](${profile.links.velog})`,
+        `- :email: [${home.email}](mailto:${profile.email})`,
+      ].join("\n"),
+    },
+    {
       id: "profile",
       kind: "note",
+      order: 2,
       x: 50,
       y: 10,
       width: 26,
@@ -123,11 +163,24 @@ export function CanvasLanding({ home }: CanvasLandingProps) {
       ].join("\n"),
     },
     {
+      id: "overview-summary",
+      kind: "note",
+      order: 3,
+      x: 50,
+      y: 30,
+      width: 26,
+      markdown: [
+        `## ${home.overviewSummary.title}`,
+        ...home.overviewSummary.items.map((item) => `- ${item}`),
+      ].join("\n"),
+    },
+    {
       id: "projects-heading",
       kind: "note",
       appearance: "transparent",
+      excludeFromSequence: true,
       x: 13,
-      y: 30,
+      y: 55,
       width: 28,
       markdown: [`# ${home.projectSectionTitle}`].join("\n"),
     },
@@ -138,8 +191,9 @@ export function CanvasLanding({ home }: CanvasLandingProps) {
         src: project.iconSrc,
         alt: project.iconAlt,
       },
+      order: 4 + index,
       x: 13,
-      y: 36 + index * 17,
+      y: 61 + index * 17,
       width: 31,
       markdown: [
         `## ${project.title}`,
@@ -150,8 +204,77 @@ export function CanvasLanding({ home }: CanvasLandingProps) {
         project.stack.map((stack) => `\`${stack}\``).join(" "),
       ].join("\n"),
     })),
+    {
+      id: "experience-heading",
+      kind: "note",
+      appearance: "transparent",
+      excludeFromSequence: true,
+      x: 50,
+      y: 62,
+      width: 28,
+      markdown: [`# ${home.experienceSectionTitle}`].join("\n"),
+    },
+    {
+      id: "experience-synapsoft",
+      kind: "note",
+      order: 8,
+      x: 50,
+      y: 68,
+      width: 31,
+      markdown: [
+        `## ${home.featuredExperience.title}`,
+        home.featuredExperience.description,
+        "",
+        ...home.featuredExperience.highlights.map((highlight) => `- ${highlight}`),
+        "",
+        home.featuredExperience.stack.map((stack) => `\`${stack}\``).join(" "),
+      ].join("\n"),
+    },
+    {
+      id: "writing-heading",
+      kind: "note",
+      appearance: "transparent",
+      excludeFromSequence: true,
+      x: 82,
+      y: 30,
+      width: 28,
+      markdown: [`# ${home.writingSectionTitle}`].join("\n"),
+    },
+    {
+      id: "writing-velog",
+      kind: "note",
+      order: 9,
+      x: 82,
+      y: 36,
+      width: 31,
+      markdown: [
+        `## ${home.featuredWriting.title}`,
+        home.featuredWriting.description,
+        "",
+        ...home.featuredWriting.articles.map((article) => `- ${article}`),
+      ].join("\n"),
+    },
   ];
-  const canvasEdges: CanvasEdge[] = [];
+  const canvasEdges: CanvasEdge[] = [
+    {
+      id: "summary-to-projects",
+      directed: true,
+      from: { nodeId: "overview-summary", side: "left" },
+      to: { nodeId: "projects-heading", side: "right" },
+    },
+    {
+      id: "summary-to-experience",
+      directed: true,
+      from: { nodeId: "overview-summary", side: "bottom" },
+      to: { nodeId: "experience-heading", side: "top" },
+    },
+    {
+      id: "summary-to-writing",
+      directed: true,
+      from: { nodeId: "overview-summary", side: "right" },
+      to: { nodeId: "writing-heading", side: "left" },
+    },
+  ];
 
   return (
     <WorkflowCanvas

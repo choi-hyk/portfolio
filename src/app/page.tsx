@@ -7,7 +7,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white text-zinc-700">
-      <CanvasLanding home={dictionary.home} />
+      <CanvasLanding home={dictionary.home} profile={dictionary.profile} />
     </main>
   );
 }

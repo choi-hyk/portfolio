@@ -11,8 +11,17 @@ import {
   useRef,
   useState,
 } from "react";
-import { Building2, Code2, GraduationCap } from "lucide-react";
+import {
+  BookOpenText,
+  Braces,
+  Building2,
+  Code2,
+  GraduationCap,
+  Mail,
+} from "lucide-react";
 import Image from "next/image";
+import { GithubIcon } from "@/components/icons/github-icon";
+import { VelogIcon } from "@/components/icons/velog-icon";
 import { Tooltip } from "@/components/tooltip";
 
 type CanvasPoint = {
@@ -893,7 +902,12 @@ function MarkdownBody({ markdown, kind, shell, appearance }: MarkdownBodyProps) 
               (item) =>
                 item.startsWith(":school:") ||
                 item.startsWith(":company:") ||
-                item.startsWith(":stack:"),
+                item.startsWith(":stack:") ||
+                item.startsWith(":project:") ||
+                item.startsWith(":writing:") ||
+                item.startsWith(":github:") ||
+                item.startsWith(":velog:") ||
+                item.startsWith(":email:"),
             )
           ) {
             return (
@@ -1124,13 +1138,58 @@ function renderInline(
   kind: CanvasNodeKind,
 ): ReactNode {
   const parts = text
-    .split(/(\*\*[^*]+\*\*|`[^`]+`|@\w[\w-]*|:(?:school|company|stack):)/g)
+    .split(
+      /(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|`[^`]+`|@\w[\w-]*|:(?:school|company|stack|project|writing|github|velog|email):)/g,
+    )
     .filter(Boolean);
 
   return parts.map((part, index) => {
-    if (part === ":school:" || part === ":company:" || part === ":stack:") {
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+
+    if (linkMatch) {
+      const [, label, href] = linkMatch;
+      const isExternal = href.startsWith("http");
+
+      return (
+        <a
+          key={`${part}-${index}`}
+          href={href}
+          target={isExternal ? "_blank" : undefined}
+          rel={isExternal ? "noreferrer" : undefined}
+          onClick={(event) => event.stopPropagation()}
+          className="font-medium underline decoration-teal-300 underline-offset-4 transition hover:text-teal-900"
+        >
+          {label}
+        </a>
+      );
+    }
+
+    if (
+      part === ":school:" ||
+      part === ":company:" ||
+      part === ":stack:" ||
+      part === ":project:" ||
+      part === ":writing:" ||
+      part === ":github:" ||
+      part === ":velog:" ||
+      part === ":email:"
+    ) {
       const Icon =
-        part === ":school:" ? GraduationCap : part === ":company:" ? Building2 : Code2;
+        part === ":school:"
+          ? GraduationCap
+          : part === ":company:"
+            ? Building2
+            : part === ":project:"
+              ? Braces
+              : part === ":writing:"
+                ? BookOpenText
+                : part === ":github:"
+                  ? GithubIcon
+                  : part === ":velog:"
+                    ? VelogIcon
+                    : part === ":email:"
+                      ? Mail
+                      : Code2;
 
       return (
         <Icon
