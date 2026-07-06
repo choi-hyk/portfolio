@@ -101,6 +101,7 @@ type CanvasLandingProps = {
 };
 
 export function CanvasLanding({ home, profile }: CanvasLandingProps) {
+  const formatTags = (tags: string[]) => tags.map((tag) => `\`${tag}\``).join(" ");
   const shell = {
     page: "bg-white text-zinc-700",
     border: "border-zinc-200",
@@ -179,7 +180,7 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
         ...home.techFocus.buildItems.map((item) => `- ${item}`),
         "",
         `### ${home.techFocus.stackTitle}`,
-        ...home.techFocus.stacks.map((stack) => `- \`${stack}\``),
+        formatTags(home.techFocus.stacks),
       ].join("\n"),
     },
     {
@@ -209,7 +210,7 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
             `- :${experience.icon}: **${experience.title}** / ${experience.detail} / ${experience.period}`,
         ),
         "",
-        `- :stack: ${home.profileCard.skills.map((skill) => `\`${skill}\``).join(" ")}`,
+        `- :stack: ${formatTags(home.profileCard.skills)}`,
       ].join("\n"),
     },
     {
@@ -228,7 +229,6 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
     ...home.featuredProjects.map((project, index) => ({
       id: `project-${index + 1}`,
       kind: "note" as const,
-      equalHeightGroup: "featured-projects",
       icon: {
         src: project.iconSrc,
         alt: project.iconAlt,
@@ -238,14 +238,12 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       y: 53 + Math.floor(index / 2) * 18,
       width: 33,
       markdown: [
-        `## ${project.title}`,
+        `## ${project.title}\u00A0\u00A0[${home.projectLinks.details}|${home.projectLinks.detailsTooltip.replace("{project}", project.title)}](/projects/${project.slug})`,
         project.description,
         "",
         ...project.highlights.map((highlight) => `- ${highlight}`),
         "",
-        project.stack.map((stack) => `\`${stack}\``).join(" "),
-        "",
-        `[${home.projectLinks.details}|${home.projectLinks.detailsTooltip.replace("{project}", project.title)}](/projects/${project.slug})`,
+        formatTags(project.stack),
       ].join("\n"),
     })),
   ];

@@ -198,10 +198,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
         "저는 AI를 소비하는 개발자가 아니라, AI를 개발 방식으로 만드는 개발자가 되고자 합니다.",
       slogan: {
         emphasis: "새로운 AI 서비스는 계속 등장합니다.",
-        body: "하지만 AI 시대의 개발 역량은 새로운 서비스를 만드는 데만 있지 않습니다.",
+        body: "하지만 **AI 시대의 개발 역량**은 새로운 서비스를 만드는 데만 있지 않습니다.",
         action:
-          "새로운 기술을 빠르게 이해하고, 검증하고, 기존 개발 환경에 적용하는 것.",
-        closing: "AI를 단순히 사용하는 데서 멈추지 않고, AI와 함께 문제를 해결하는 것.",
+          "**새로운 기술을 빠르게 이해하고, 검증하고, 기존 개발 환경에 적용하는 것.**",
+        closing:
+          "AI를 단순히 사용하는 데서 멈추지 않고, **AI와 함께 문제를 해결하는 것.**",
         final: "그것이 제가 추구하는 AI 시대의 개발 역량입니다.",
       },
       techFocus: {
@@ -539,11 +540,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
         "I aim to be a developer who turns AI into a development practice, not just a developer who consumes AI.",
       slogan: {
         emphasis: "New AI services continue to emerge.",
-        body: "But development capability in the AI era is not only about creating new services.",
+        body: "But **development capability in the AI era** is not only about creating new services.",
         action:
-          "It is about quickly understanding new technologies, validating them, and applying them to existing development environments.",
+          "It is about **quickly understanding new technologies, validating them, and applying them to existing development environments.**",
         closing:
-          "Not stopping at simply using AI, but solving problems together with AI.",
+          "Not stopping at simply using AI, but **solving problems together with AI.**",
         final: "That is the development capability I pursue in the AI era.",
       },
       techFocus: {

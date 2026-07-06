@@ -1450,7 +1450,7 @@ function renderInline(
       const [visibleLabel, tooltipContent = visibleLabel] = label.split("|");
       const isExternal = href.startsWith("http");
       const linkClassName =
-        "inline-flex items-center rounded-full border border-teal-200 bg-white/80 px-2.5 py-1 text-xs font-semibold text-teal-800 shadow-sm transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-950";
+        "inline-flex align-middle items-center rounded-full border border-teal-200 bg-white/80 px-2.5 py-1 text-xs font-semibold leading-none text-teal-800 shadow-sm transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-950";
       const link = isExternal ? (
         <a
           href={href}
