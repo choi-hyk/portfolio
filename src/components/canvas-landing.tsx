@@ -62,7 +62,14 @@ type CanvasLandingProps = {
       skills: string[];
     };
     projectSectionTitle: string;
+    projectLinks: {
+      overview: string;
+      overviewTooltip: string;
+      details: string;
+      detailsTooltip: string;
+    };
     featuredProjects: Array<{
+      slug: string;
       title: string;
       description: string;
       highlights: string[];
@@ -132,6 +139,7 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       kind: "note",
       appearance: "transparent",
       excludeFromSequence: true,
+      order: 2,
       x: 13,
       y: 28,
       width: 14,
@@ -142,6 +150,7 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       kind: "note",
       appearance: "transparent",
       excludeFromSequence: true,
+      order: 3,
       x: 41,
       y: 28,
       width: 12,
@@ -152,6 +161,7 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       kind: "note",
       appearance: "transparent",
       excludeFromSequence: true,
+      order: 4,
       x: 57,
       y: 12,
       width: 18,
@@ -207,10 +217,13 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       kind: "note",
       appearance: "transparent",
       excludeFromSequence: true,
+      order: 5,
       x: 13,
-      y: 54,
-      width: 28,
-      markdown: [`# ${home.projectSectionTitle}`].join("\n"),
+      y: 48,
+      width: 36,
+      markdown: [
+        `# ${home.projectSectionTitle} [${home.projectLinks.overview}|${home.projectLinks.overviewTooltip}](/projects)`,
+      ].join("\n"),
     },
     ...home.featuredProjects.map((project, index) => ({
       id: `project-${index + 1}`,
@@ -221,8 +234,8 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
         alt: project.iconAlt,
       },
       order: 5 + index,
-      x: index % 2 === 0 ? 13 : 50,
-      y: 58 + Math.floor(index / 2) * 22,
+      x: index % 2 === 0 ? 13 : 47,
+      y: 53 + Math.floor(index / 2) * 18,
       width: 33,
       markdown: [
         `## ${project.title}`,
@@ -231,6 +244,8 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
         ...project.highlights.map((highlight) => `- ${highlight}`),
         "",
         project.stack.map((stack) => `\`${stack}\``).join(" "),
+        "",
+        `[${home.projectLinks.details}|${home.projectLinks.detailsTooltip.replace("{project}", project.title)}](/projects/${project.slug})`,
       ].join("\n"),
     })),
   ];

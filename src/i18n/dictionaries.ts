@@ -81,7 +81,14 @@ export type Dictionary = {
       skills: string[];
     };
     projectSectionTitle: string;
+    projectLinks: {
+      overview: string;
+      overviewTooltip: string;
+      details: string;
+      detailsTooltip: string;
+    };
     featuredProjects: Array<{
+      slug: string;
       title: string;
       description: string;
       highlights: string[];
@@ -242,8 +249,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
         skills: ["FastAPI", "RAG", "MCP"],
       },
       projectSectionTitle: "Projects",
+      projectLinks: {
+        overview: "↗",
+        overviewTooltip: "프로젝트 메인 페이지로 이동",
+        details: "Project details",
+        detailsTooltip: "{project} 상세 페이지로 이동",
+      },
       featuredProjects: [
         {
+          slug: "hippobox",
           title: "HippoBox",
           description:
             "지식을 저장하고 MCP로 조회·관리할 수 있는 개인 지식 관리 서비스입니다.",
@@ -256,6 +270,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "HippoBox 아이콘",
         },
         {
+          slug: "say-it-its-ok",
           title: "말하면 OK",
           description:
             "음성 인식 기반으로 사용자의 자연어 요청에 맞는 응답과 행동을 수행하는 키오스크 서비스입니다.",
@@ -268,6 +283,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "말하면 OK 아이콘",
         },
         {
+          slug: "blueprint4agent",
           title: "Blueprint4Agent / B4A",
           description:
             "바이브 코딩과 에이전틱 코딩 사용자를 위한 FastAPI 프로젝트 템플릿입니다.",
@@ -280,6 +296,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "Blueprint4Agent 아이콘",
         },
         {
+          slug: "today-in-tech",
           title: "Today in Tech",
           description: "AI 기반 기술 뉴스 큐레이션 아카이브입니다.",
           highlights: [
@@ -571,8 +588,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
         skills: ["FastAPI", "RAG", "MCP"],
       },
       projectSectionTitle: "Projects",
+      projectLinks: {
+        overview: "↗",
+        overviewTooltip: "Go to projects page",
+        details: "Project details",
+        detailsTooltip: "Go to {project} details",
+      },
       featuredProjects: [
         {
+          slug: "hippobox",
           title: "HippoBox",
           description:
             "A personal knowledge service for storing, retrieving, and managing knowledge through MCP.",
@@ -585,6 +609,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "HippoBox icon",
         },
         {
+          slug: "say-it-its-ok",
           title: "Say It, It's OK",
           description:
             "A voice-enabled kiosk service that responds to natural-language requests with appropriate answers and actions.",
@@ -597,6 +622,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "Say It, It's OK icon",
         },
         {
+          slug: "blueprint4agent",
           title: "Blueprint4Agent / B4A",
           description:
             "A FastAPI project template for vibe coding and agentic coding users.",
@@ -609,6 +635,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "Blueprint4Agent icon",
         },
         {
+          slug: "today-in-tech",
           title: "Today in Tech",
           description: "An AI-powered tech news curation archive.",
           highlights: [

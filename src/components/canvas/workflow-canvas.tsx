@@ -1,5 +1,19 @@
 "use client";
 
+import { GithubIcon } from "@/components/icons/github-icon";
+import { VelogIcon } from "@/components/icons/velog-icon";
+import { usePortfolioViewport } from "@/components/portfolio-viewport-context";
+import { Tooltip } from "@/components/tooltip";
+import {
+  BookOpenText,
+  Braces,
+  Building2,
+  Code2,
+  GraduationCap,
+  Mail,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import {
   type CSSProperties,
   type PointerEvent,
@@ -12,19 +26,6 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  BookOpenText,
-  Braces,
-  Building2,
-  Code2,
-  GraduationCap,
-  Mail,
-} from "lucide-react";
-import Image from "next/image";
-import { GithubIcon } from "@/components/icons/github-icon";
-import { VelogIcon } from "@/components/icons/velog-icon";
-import { usePortfolioViewport } from "@/components/portfolio-viewport-context";
-import { Tooltip } from "@/components/tooltip";
 
 type CanvasPoint = {
   x: number;
@@ -1057,6 +1058,40 @@ function MarkdownNode({
     return () => observer.disconnect();
   }, [node.id, onResize]);
 
+  const nodeStyle = {
+    left: (node.x / 100) * BASE_CANVAS_SIZE.width,
+    top: (node.y / 100) * BASE_CANVAS_SIZE.height,
+    width: (node.width / 100) * BASE_CANVAS_SIZE.width,
+    minHeight,
+    animationDelay:
+      animationOrder === undefined
+        ? undefined
+        : `${animationOrder * NODE_REVEAL_STEP_MS}ms`,
+  } as CSSProperties;
+  const nodeClassName = `workflow-node ${appearance}`;
+  const nodeContent = (
+    <div className={node.icon ? "flex items-start gap-3" : undefined}>
+      {node.icon ? (
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white">
+          <Image
+            src={node.icon.src}
+            alt={node.icon.alt}
+            width={28}
+            height={28}
+            unoptimized
+            className="h-7 w-7"
+          />
+        </div>
+      ) : null}
+      <MarkdownBody
+        markdown={node.markdown}
+        kind={node.kind}
+        shell={shell}
+        appearance={node.appearance ?? "default"}
+      />
+    </div>
+  );
+
   return (
     <article
       ref={nodeRef}
@@ -1072,40 +1107,10 @@ function MarkdownNode({
           onFocus();
         }
       }}
-      className={`workflow-node ${appearance}`}
-      style={
-        {
-          left: (node.x / 100) * BASE_CANVAS_SIZE.width,
-          top: (node.y / 100) * BASE_CANVAS_SIZE.height,
-          width: (node.width / 100) * BASE_CANVAS_SIZE.width,
-          minHeight,
-          animationDelay:
-            animationOrder === undefined
-              ? undefined
-              : `${animationOrder * NODE_REVEAL_STEP_MS}ms`,
-        } as CSSProperties
-      }
+      className={nodeClassName}
+      style={nodeStyle}
     >
-      <div className={node.icon ? "flex items-start gap-3" : undefined}>
-        {node.icon ? (
-          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white">
-            <Image
-              src={node.icon.src}
-              alt={node.icon.alt}
-              width={28}
-              height={28}
-              unoptimized
-              className="h-7 w-7"
-            />
-          </div>
-        ) : null}
-        <MarkdownBody
-          markdown={node.markdown}
-          kind={node.kind}
-          shell={shell}
-          appearance={node.appearance ?? "default"}
-        />
-      </div>
+      {nodeContent}
     </article>
   );
 }
@@ -1396,19 +1401,34 @@ function renderInline(
 
     if (linkMatch) {
       const [, label, href] = linkMatch;
+      const [visibleLabel, tooltipContent = visibleLabel] = label.split("|");
       const isExternal = href.startsWith("http");
+      const linkClassName =
+        "inline-flex items-center rounded-full border border-teal-200 bg-white/80 px-2.5 py-1 text-xs font-semibold text-teal-800 shadow-sm transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-950";
+      const link = isExternal ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(event) => event.stopPropagation()}
+          className={linkClassName}
+        >
+          {visibleLabel}
+        </a>
+      ) : (
+        <Link
+          href={href}
+          onClick={(event) => event.stopPropagation()}
+          className={linkClassName}
+        >
+          {visibleLabel}
+        </Link>
+      );
 
       return (
-        <a
-          key={`${part}-${index}`}
-          href={href}
-          target={isExternal ? "_blank" : undefined}
-          rel={isExternal ? "noreferrer" : undefined}
-          onClick={(event) => event.stopPropagation()}
-          className="font-medium underline decoration-teal-300 underline-offset-4 transition hover:text-teal-900"
-        >
-          {label}
-        </a>
+        <Tooltip key={`${part}-${index}`} content={tooltipContent} placement="right">
+          {link}
+        </Tooltip>
       );
     }
 
@@ -1558,7 +1578,9 @@ function getViewportCenter(viewportSize: CanvasSize, occludedLeft: number) {
 }
 
 function getCanvasRenderOrder(nodes: CanvasNode[]) {
-  return new Map(getCanvasOrderedNodes(nodes).map((node, index) => [node.id, index]));
+  return new Map(
+    getCanvasAnimationOrderedNodes(nodes).map((node, index) => [node.id, index]),
+  );
 }
 
 function getEqualHeightGroups(nodes: CanvasNode[], nodeHeights: CanvasNodeHeights) {
@@ -1577,13 +1599,20 @@ function getEqualHeightGroups(nodes: CanvasNode[], nodeHeights: CanvasNodeHeight
 
 function getCanvasOrderedNodes(nodes: CanvasNode[]) {
   const sequenceNodes = nodes.filter((node) => !node.excludeFromSequence);
+
+  return getOrderedNodes(sequenceNodes);
+}
+
+function getCanvasAnimationOrderedNodes(nodes: CanvasNode[]) {
+  return getOrderedNodes(nodes);
+}
+
+function getOrderedNodes(nodes: CanvasNode[]) {
   const automaticOrder = new Map(
-    [...sequenceNodes]
-      .sort(compareByCanvasPosition)
-      .map((node, index) => [node.id, index + 1]),
+    [...nodes].sort(compareByCanvasPosition).map((node, index) => [node.id, index + 1]),
   );
 
-  return [...sequenceNodes].sort((a, b) => {
+  return [...nodes].sort((a, b) => {
     const sequenceOrder =
       (a.order ?? automaticOrder.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
       (b.order ?? automaticOrder.get(b.id) ?? Number.MAX_SAFE_INTEGER);
