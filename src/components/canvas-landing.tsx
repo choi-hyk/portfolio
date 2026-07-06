@@ -50,13 +50,8 @@ type CanvasLandingProps = {
       }>;
       skills: string[];
     };
-    overviewSummary: {
-      title: string;
-      items: string[];
-    };
     projectSectionTitle: string;
     experienceSectionTitle: string;
-    writingSectionTitle: string;
     featuredProjects: Array<{
       title: string;
       description: string;
@@ -70,11 +65,6 @@ type CanvasLandingProps = {
       description: string;
       highlights: string[];
       stack: string[];
-    };
-    featuredWriting: {
-      title: string;
-      description: string;
-      articles: string[];
     };
     flow: Array<{
       label: string;
@@ -137,8 +127,8 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       id: "social-links",
       kind: "note",
       excludeFromSequence: true,
-      x: 78,
-      y: 10,
+      x: 41,
+      y: 31,
       width: 10,
       markdown: [
         "## Links",
@@ -151,8 +141,8 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       id: "profile",
       kind: "note",
       order: 2,
-      x: 50,
-      y: 10,
+      x: 13,
+      y: 31,
       width: 26,
       markdown: [
         `## ${home.profileCard.koreanName} ${home.profileCard.englishName}`,
@@ -165,24 +155,12 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       ].join("\n"),
     },
     {
-      id: "overview-summary",
-      kind: "note",
-      order: 3,
-      x: 50,
-      y: 30,
-      width: 26,
-      markdown: [
-        `## ${home.overviewSummary.title}`,
-        ...home.overviewSummary.items.map((item) => `- ${item}`),
-      ].join("\n"),
-    },
-    {
       id: "projects-heading",
       kind: "note",
       appearance: "transparent",
       excludeFromSequence: true,
       x: 13,
-      y: 55,
+      y: 52,
       width: 28,
       markdown: [`# ${home.projectSectionTitle}`].join("\n"),
     },
@@ -193,9 +171,9 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
         src: project.iconSrc,
         alt: project.iconAlt,
       },
-      order: 4 + index,
+      order: 3 + index,
       x: 13,
-      y: 61 + index * 17,
+      y: 58 + index * 17,
       width: 31,
       markdown: [
         `## ${project.title}`,
@@ -212,16 +190,16 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
       appearance: "transparent",
       excludeFromSequence: true,
       x: 50,
-      y: 62,
+      y: 52,
       width: 28,
       markdown: [`# ${home.experienceSectionTitle}`].join("\n"),
     },
     {
       id: "experience-synapsoft",
       kind: "note",
-      order: 8,
+      order: 7,
       x: 50,
-      y: 68,
+      y: 58,
       width: 31,
       markdown: [
         `## ${home.featuredExperience.title}`,
@@ -232,51 +210,8 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
         home.featuredExperience.stack.map((stack) => `\`${stack}\``).join(" "),
       ].join("\n"),
     },
-    {
-      id: "writing-heading",
-      kind: "note",
-      appearance: "transparent",
-      excludeFromSequence: true,
-      x: 82,
-      y: 30,
-      width: 28,
-      markdown: [`# ${home.writingSectionTitle}`].join("\n"),
-    },
-    {
-      id: "writing-velog",
-      kind: "note",
-      order: 9,
-      x: 82,
-      y: 36,
-      width: 31,
-      markdown: [
-        `## ${home.featuredWriting.title}`,
-        home.featuredWriting.description,
-        "",
-        ...home.featuredWriting.articles.map((article) => `- ${article}`),
-      ].join("\n"),
-    },
   ];
-  const canvasEdges: CanvasEdge[] = [
-    {
-      id: "summary-to-projects",
-      directed: true,
-      from: { nodeId: "overview-summary", side: "left" },
-      to: { nodeId: "projects-heading", side: "right" },
-    },
-    {
-      id: "summary-to-experience",
-      directed: true,
-      from: { nodeId: "overview-summary", side: "bottom" },
-      to: { nodeId: "experience-heading", side: "top" },
-    },
-    {
-      id: "summary-to-writing",
-      directed: true,
-      from: { nodeId: "overview-summary", side: "right" },
-      to: { nodeId: "writing-heading", side: "left" },
-    },
-  ];
+  const canvasEdges: CanvasEdge[] = [];
 
   return (
     <WorkflowCanvas

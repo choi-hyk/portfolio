@@ -112,7 +112,7 @@ const MIN_ZOOM = 0.7;
 const MAX_ZOOM = 1.5;
 const ZOOM_STEP = 0.1;
 const DEFAULT_ZOOM = 0.7;
-const INITIAL_CONTENT_GAP = 16;
+const INITIAL_CONTENT_GAP = 32;
 const INITIAL_CONTENT_TOP = 24;
 const defaultCanvasLabels: WorkflowCanvasLabels = {
   previousNode: "Previous node",
