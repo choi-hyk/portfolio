@@ -16,7 +16,6 @@ export function PortfolioPageShell({ children }: PortfolioPageShellProps) {
       profile={dictionary.profile}
       linkLabels={dictionary.home}
       projects={dictionary.projects}
-      experiences={dictionary.experience.items}
     >
       {children}
     </PortfolioShell>

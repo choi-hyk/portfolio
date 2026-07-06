@@ -51,7 +51,6 @@ type CanvasLandingProps = {
       skills: string[];
     };
     projectSectionTitle: string;
-    experienceSectionTitle: string;
     featuredProjects: Array<{
       title: string;
       description: string;
@@ -60,12 +59,6 @@ type CanvasLandingProps = {
       iconSrc: string;
       iconAlt: string;
     }>;
-    featuredExperience: {
-      title: string;
-      description: string;
-      highlights: string[];
-      stack: string[];
-    };
     flow: Array<{
       label: string;
       title: string;
@@ -184,32 +177,6 @@ export function CanvasLanding({ home, profile }: CanvasLandingProps) {
         project.stack.map((stack) => `\`${stack}\``).join(" "),
       ].join("\n"),
     })),
-    {
-      id: "experience-heading",
-      kind: "note",
-      appearance: "transparent",
-      excludeFromSequence: true,
-      x: 50,
-      y: 52,
-      width: 28,
-      markdown: [`# ${home.experienceSectionTitle}`].join("\n"),
-    },
-    {
-      id: "experience-synapsoft",
-      kind: "note",
-      order: 7,
-      x: 50,
-      y: 58,
-      width: 31,
-      markdown: [
-        `## ${home.featuredExperience.title}`,
-        home.featuredExperience.description,
-        "",
-        ...home.featuredExperience.highlights.map((highlight) => `- ${highlight}`),
-        "",
-        home.featuredExperience.stack.map((stack) => `\`${stack}\``).join(" "),
-      ].join("\n"),
-    },
   ];
   const canvasEdges: CanvasEdge[] = [];
 

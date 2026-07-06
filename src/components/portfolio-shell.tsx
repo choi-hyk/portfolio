@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   BookOpenText,
   Braces,
-  BriefcaseBusiness,
   ChevronsLeft,
   Home,
   type LucideIcon,
@@ -25,7 +24,6 @@ type PortfolioShellProps = {
   profile: Dictionary["profile"];
   linkLabels: Pick<Dictionary["home"], "github" | "velog" | "email">;
   projects: Dictionary["projects"];
-  experiences: Dictionary["experience"]["items"];
 };
 
 type SidebarChild = {
@@ -50,7 +48,6 @@ export function PortfolioShell({
   profile,
   linkLabels,
   projects,
-  experiences,
 }: PortfolioShellProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -64,7 +61,6 @@ export function PortfolioShell({
             profile={profile}
             linkLabels={linkLabels}
             projects={projects}
-            experiences={experiences}
             onToggle={() => setIsSidebarCollapsed((value) => !value)}
           />
         </aside>
@@ -85,15 +81,9 @@ function PortfolioSidebar({
   profile,
   linkLabels,
   projects,
-  experiences,
   onToggle,
 }: PortfolioSidebarProps) {
   const pathname = usePathname();
-  const experienceChildren = experiences.map((experience) => ({
-    id: experience.slug,
-    label: experience.company,
-    href: `/experience/${experience.slug}`,
-  }));
   const projectChildren = projects
     .filter((project) => project.featured)
     .slice(0, sidebarProjectLimit)
@@ -108,13 +98,6 @@ function PortfolioSidebar({
       label: navigation.overview,
       href: "/",
       icon: Home,
-    },
-    {
-      id: "experience",
-      label: navigation.experience,
-      href: "/experience",
-      icon: BriefcaseBusiness,
-      children: experienceChildren,
     },
     {
       id: "projects",

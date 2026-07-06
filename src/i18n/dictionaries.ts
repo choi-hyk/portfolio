@@ -8,16 +8,6 @@ type Writing = {
   href: string;
 };
 
-export type Experience = {
-  slug: string;
-  company: string;
-  role: string;
-  period: string;
-  description: string;
-  highlights: string[];
-  stack: string[];
-};
-
 type SkillGroup = {
   title: string;
   items: string[];
@@ -37,7 +27,6 @@ export type Dictionary = {
   nav: {
     portfolio: string;
     overview: string;
-    experience: string;
     projects: string;
     writing: string;
     openSource: string;
@@ -81,7 +70,6 @@ export type Dictionary = {
       skills: string[];
     };
     projectSectionTitle: string;
-    experienceSectionTitle: string;
     featuredProjects: Array<{
       title: string;
       description: string;
@@ -90,12 +78,6 @@ export type Dictionary = {
       iconSrc: string;
       iconAlt: string;
     }>;
-    featuredExperience: {
-      title: string;
-      description: string;
-      highlights: string[];
-      stack: string[];
-    };
     primaryCta: string;
     secondaryCta: string;
     flow: Array<{
@@ -133,11 +115,6 @@ export type Dictionary = {
     eyebrow: string;
     title: string;
     paragraphs: string[];
-  };
-  experience: {
-    eyebrow: string;
-    title: string;
-    items: Experience[];
   };
   skills: {
     eyebrow: string;
@@ -185,7 +162,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
     nav: {
       portfolio: "Portfolio",
       overview: "Overview",
-      experience: "Experience",
       projects: "Projects",
       writing: "Technical Writing",
       openSource: "Open Source",
@@ -239,7 +215,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         skills: ["FastAPI", "RAG", "MCP"],
       },
       projectSectionTitle: "Projects",
-      experienceSectionTitle: "Experience",
       featuredProjects: [
         {
           title: "HippoBox",
@@ -289,17 +264,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "Today in Tech 아이콘",
         },
       ],
-      featuredExperience: {
-        title: "Synapsoft",
-        description:
-          "FastAPI와 RAG 기반 서비스 개발에 참여하며 Python 백엔드와 LLM 기능 흐름을 경험했습니다.",
-        highlights: [
-          "FastAPI 기반 API 개발 및 유지보수",
-          "RAG 기반 기능 개발 참여",
-          "LLM 기능의 데이터 처리와 응답 품질 개선 흐름 경험",
-        ],
-        stack: ["Python", "FastAPI", "RAG", "LLM"],
-      },
       primaryCta: "핵심 프로젝트 보기",
       secondaryCta: "기술 기록 보기",
       flow: [
@@ -360,27 +324,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         "FastAPI와 Python 기반 백엔드 개발을 중심으로 RAG/LLM 서비스, MCP 기반 지식 관리, 개발 자동화 도구를 만들고 있습니다.",
         "실무에서는 FastAPI와 RAG 기반 서비스 개발을 경험하고 있으며, 개인 및 조직 프로젝트에서는 AI 애플리케이션을 실제로 운영 가능한 구조로 만드는 데 집중하고 있습니다.",
         "포트폴리오에서는 화려한 효과보다 프로젝트의 문제 정의, 역할, 기술 선택, 결과를 빠르게 파악할 수 있는 정석적인 구성을 우선합니다.",
-      ],
-    },
-    experience: {
-      eyebrow: "Experience",
-      title: "실무 경험",
-      items: [
-        {
-          slug: "synapsoft",
-          company: "Synapsoft",
-          role: "Backend / AI Application Developer",
-          period: "2025.08 - Present",
-          description:
-            "FastAPI와 RAG 기반 서비스 개발에 참여하며 Python 백엔드와 LLM 기반 기능 구현 흐름을 경험했습니다.",
-          highlights: [
-            "FastAPI 기반 서비스 개발 및 유지보수",
-            "RAG 기반 기능 개발 참여",
-            "Python sync/async, ASGI, blocking/non-blocking 구조 학습 및 적용",
-            "LLM 기반 기능의 데이터 처리, API 설계, 응답 품질 개선 흐름 경험",
-          ],
-          stack: ["Python", "FastAPI", "RAG", "LLM", "Svelte"],
-        },
       ],
     },
     skills: {
@@ -531,7 +474,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
     nav: {
       portfolio: "Portfolio",
       overview: "Overview",
-      experience: "Experience",
       projects: "Projects",
       writing: "Technical Writing",
       openSource: "Open Source",
@@ -586,7 +528,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         skills: ["FastAPI", "RAG", "MCP"],
       },
       projectSectionTitle: "Projects",
-      experienceSectionTitle: "Experience",
       featuredProjects: [
         {
           title: "HippoBox",
@@ -636,17 +577,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "Today in Tech icon",
         },
       ],
-      featuredExperience: {
-        title: "Synapsoft",
-        description:
-          "Worked on FastAPI and RAG-based service development, gaining experience in Python backend systems and LLM feature flows.",
-        highlights: [
-          "Developed and maintained FastAPI-based APIs",
-          "Participated in RAG-based feature development",
-          "Worked on LLM data processing and response quality improvement flows",
-        ],
-        stack: ["Python", "FastAPI", "RAG", "LLM"],
-      },
       primaryCta: "View core projects",
       secondaryCta: "Read technical notes",
       flow: [
@@ -707,27 +637,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         "I build FastAPI and Python-based backend services, RAG/LLM applications, MCP-powered knowledge tools, and developer automation.",
         "At work, I have experience with FastAPI and RAG-based service development. In personal and organization projects, I focus on shaping AI applications into maintainable product structures.",
         "This portfolio favors a conventional, content-first structure so readers can quickly understand the problems, roles, technical choices, and outcomes behind each project.",
-      ],
-    },
-    experience: {
-      eyebrow: "Experience",
-      title: "Work experience",
-      items: [
-        {
-          slug: "synapsoft",
-          company: "Synapsoft",
-          role: "Backend / AI Application Developer",
-          period: "2025.08 - Present",
-          description:
-            "Worked on FastAPI and RAG-based service development, gaining experience in Python backend systems and LLM-powered feature workflows.",
-          highlights: [
-            "Developed and maintained FastAPI-based services",
-            "Participated in RAG-based feature development",
-            "Applied Python sync/async, ASGI, and blocking/non-blocking concepts",
-            "Worked on data processing, API design, and response quality improvement for LLM features",
-          ],
-          stack: ["Python", "FastAPI", "RAG", "LLM", "Svelte"],
-        },
       ],
     },
     skills: {
