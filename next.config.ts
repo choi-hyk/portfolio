@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   basePath: githubPagesBasePath,
   assetPrefix: githubPagesBasePath,
+  env: {
+    NEXT_PUBLIC_BASE_PATH: githubPagesBasePath,
+  },
   images: {
     unoptimized: true,
   },

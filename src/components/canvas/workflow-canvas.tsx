@@ -142,6 +142,7 @@ const MAX_ZOOM = DEFAULT_ZOOM * MAX_DISPLAY_ZOOM;
 const ZOOM_STEP = DEFAULT_ZOOM * 0.1;
 const INITIAL_CONTENT_GAP = 32;
 const INITIAL_CONTENT_TOP = 24;
+const publicAssetBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const defaultCanvasLabels: WorkflowCanvasLabels = {
   previousNode: "Previous node",
   nextNode: "Next node",
@@ -152,6 +153,19 @@ const defaultCanvasLabels: WorkflowCanvasLabels = {
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
 };
+
+function resolvePublicAssetPath(src: string) {
+  if (
+    !publicAssetBasePath ||
+    !src.startsWith("/") ||
+    src.startsWith("//") ||
+    src.startsWith(`${publicAssetBasePath}/`)
+  ) {
+    return src;
+  }
+
+  return `${publicAssetBasePath}${src}`;
+}
 
 export function WorkflowCanvas({
   label,
@@ -937,9 +951,7 @@ function CanvasEdges({
             markerEnd={
               edge.directed || edge.bidirectional ? "url(#canvas-arrow)" : undefined
             }
-            markerStart={
-              edge.bidirectional ? "url(#canvas-arrow-start)" : undefined
-            }
+            markerStart={edge.bidirectional ? "url(#canvas-arrow-start)" : undefined}
             stroke="currentColor"
             pathLength={1}
             strokeLinecap="round"
@@ -1098,15 +1110,15 @@ function MarkdownNode({
     feature: "border-transparent bg-transparent p-0 shadow-none backdrop-blur-0",
     section:
       "rounded-xl border border-teal-200 bg-teal-50/40 p-5 shadow-sm shadow-zinc-900/5",
-    technology:
-      "rounded-lg border border-zinc-200 bg-transparent p-3 shadow-none",
+    technology: "rounded-lg border border-zinc-200 bg-transparent p-3 shadow-none",
   }[node.appearance ?? "default"];
   const isSection = node.appearance === "section";
   const isTechnology = node.appearance === "technology";
   const imageFrameStyle = node.image?.frameHeight
     ? ({ height: node.image.frameHeight } as CSSProperties)
     : undefined;
-  const isSnugOutlineImage = node.image?.frame === "outline" && node.image.fit === "contain";
+  const isSnugOutlineImage =
+    node.image?.frame === "outline" && node.image.fit === "contain";
   const imageClassName = node.image?.frameHeight
     ? isSnugOutlineImage
       ? "h-auto w-auto max-h-full max-w-full rounded-2xl border border-teal-200 object-contain"
@@ -1161,7 +1173,7 @@ function MarkdownNode({
           {node.icon ? (
             <span className="pointer-events-none flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white shadow-sm">
               <Image
-                src={node.icon.src}
+                src={resolvePublicAssetPath(node.icon.src)}
                 alt={node.icon.alt}
                 width={30}
                 height={30}
@@ -1200,7 +1212,7 @@ function MarkdownNode({
           }
         >
           <Image
-            src={node.icon.src}
+            src={resolvePublicAssetPath(node.icon.src)}
             alt={node.icon.alt}
             width={inlineIconSize}
             height={inlineIconSize}
@@ -1218,14 +1230,14 @@ function MarkdownNode({
             isSnugOutlineImage
               ? "flex items-center justify-center overflow-hidden bg-transparent"
               : node.image.frame === "outline"
-              ? "flex items-center justify-center overflow-hidden rounded-2xl border border-teal-200 bg-transparent"
-              : node.image.frame === "plain" || node.appearance === "transparent"
-                ? "overflow-hidden"
-                : "overflow-hidden rounded-2xl border border-teal-100 bg-white/70 shadow-sm shadow-zinc-900/5"
+                ? "flex items-center justify-center overflow-hidden rounded-2xl border border-teal-200 bg-transparent"
+                : node.image.frame === "plain" || node.appearance === "transparent"
+                  ? "overflow-hidden"
+                  : "overflow-hidden rounded-2xl border border-teal-100 bg-white/70 shadow-sm shadow-zinc-900/5"
           }
         >
           <Image
-            src={node.image.src}
+            src={resolvePublicAssetPath(node.image.src)}
             alt={node.image.alt}
             width={node.image.width}
             height={node.image.height}
