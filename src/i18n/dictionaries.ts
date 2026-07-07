@@ -1,12 +1,5 @@
-import type { Project } from "@/data/projects";
+import type { Project } from "@/types/project";
 import type { Locale } from "./config";
-
-type Writing = {
-  title: string;
-  category: string;
-  description: string;
-  href: string;
-};
 
 type SkillGroup = {
   title: string;
@@ -28,7 +21,6 @@ export type Dictionary = {
     portfolio: string;
     overview: string;
     projects: string;
-    writing: string;
     openSource: string;
     skills: string;
     external: string;
@@ -96,38 +88,9 @@ export type Dictionary = {
       iconSrc: string;
       iconAlt: string;
     }>;
-    primaryCta: string;
-    secondaryCta: string;
-    flow: Array<{
-      label: string;
-      title: string;
-      description: string;
-    }>;
-    ide: {
-      explorer: string;
-      terminal: string;
-      theme: string;
-      light: string;
-      dark: string;
-      activeFile: string;
-      terminalCommand: string;
-      terminalStatus: string;
-      folders: {
-        root: string;
-        source: string;
-        content: string;
-      };
-    };
     github: string;
     velog: string;
     email: string;
-    stats: string[];
-    selectedProjects: {
-      eyebrow: string;
-      title: string;
-      description: string;
-      cta: string;
-    };
   };
   about: {
     eyebrow: string;
@@ -156,13 +119,7 @@ export type Dictionary = {
     description: string;
     note: string;
   };
-  writingPage: {
-    eyebrow: string;
-    title: string;
-    description: string;
-  };
   projects: Project[];
-  writings: Writing[];
 };
 
 export const dictionaries: Record<Locale, Dictionary> = {
@@ -182,7 +139,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
       portfolio: "Portfolio",
       overview: "Overview",
       projects: "Projects",
-      writing: "Technical Writing",
       openSource: "Open Source",
       skills: "Skills",
       external: "External",
@@ -310,58 +266,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "Today in Tech 아이콘",
         },
       ],
-      primaryCta: "핵심 프로젝트 보기",
-      secondaryCta: "기술 기록 보기",
-      flow: [
-        {
-          label: "Start",
-          title: "문제 정의",
-          description: "AI 기능을 데모가 아니라 운영 가능한 서비스 문제로 바라봅니다.",
-        },
-        {
-          label: "Build",
-          title: "구조 설계",
-          description:
-            "FastAPI, RAG, MCP, 자동화를 조합해 유지 가능한 구조로 만듭니다.",
-        },
-        {
-          label: "Proof",
-          title: "증거 확인",
-          description:
-            "조직 프로젝트, 공개 도구, 기술 글로 실제 작업 흔적을 보여줍니다.",
-        },
-      ],
-      ide: {
-        explorer: "파일 탐색기",
-        terminal: "터미널",
-        theme: "테마",
-        light: "Light",
-        dark: "Palenight",
-        activeFile: "README.md",
-        terminalCommand: "npm run profile",
-        terminalStatus:
-          "FastAPI / RAG / MCP / Organization Projects / Technical Writing",
-        folders: {
-          root: "portfolio",
-          source: "src",
-          content: "content",
-        },
-      },
       github: "GitHub",
       velog: "Velog",
       email: "Email",
-      stats: [
-        "Synapsoft · FastAPI/RAG service development",
-        "Myongji University · Computer Engineering",
-        "Seoul, Korea · Open to backend/AI application roles",
-      ],
-      selectedProjects: {
-        eyebrow: "Selected Projects",
-        title: "조직 프로젝트와 개인 도구를 중심으로 구성했습니다.",
-        description:
-          "HippoBox, Blueprint4Agent, 말하면 OK처럼 FastAPI, MCP, Agent, 음성/NLP 경험을 보여줄 수 있는 프로젝트를 우선 배치합니다.",
-        cta: "모든 프로젝트 보기",
-      },
     },
     about: {
       eyebrow: "About",
@@ -415,12 +322,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         "**FastAPI 기반의 백엔드**를 중심으로 **RAG**, **Agent Workflow**, **자동화 시스템**을 구현하며,\n**AI를 실제 서비스에 자연스럽게 녹여내는 개발**을 지향합니다.",
       note:
         "이 페이지에서는 이러한 관심사를 바탕으로 진행한 주요 프로젝트들을 소개합니다.\n자세한 개발 과정과 프로젝트 내용은 프로젝트별 상세 페이지에서 확인할 수 있습니다.",
-    },
-    writingPage: {
-      eyebrow: "Writing",
-      title: "개발 과정에서 남긴 기록",
-      description:
-        "Velog 글은 실무와 개인 프로젝트에서 마주친 문제를 설명하는 보조 증거로 활용합니다.",
     },
     projects: [
       {
@@ -484,29 +385,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         featured: false,
       },
     ],
-    writings: [
-      {
-        title: "[HippoBox] HippoBox 시작하기",
-        category: "Project",
-        description:
-          "여러 AI 서비스에서 사용 가능한 지식 베이스 서비스를 만들기 시작한 배경과 FastAPI, MCP 기반 구조 선택을 정리한 글입니다.",
-        href: "https://velog.io/@choi-hyk/Project-HippoBox-%EC%8B%9C%EC%9E%91%ED%95%98%EA%B8%B0",
-      },
-      {
-        title: "[FastAPI] sync/async 의 논리적 구조",
-        category: "FastAPI",
-        description:
-          "FastAPI에서 동기/비동기 함수가 처리되는 방식과 ASGI, blocking/non-blocking 구조를 정리한 글입니다.",
-        href: "https://velog.io/@choi-hyk/posts",
-      },
-      {
-        title: "[Mini Project] Velog Backup 프로그램 만들기",
-        category: "Automation",
-        description:
-          "Velog 글을 Markdown으로 백업하고 자동화하는 도구를 만들며 GraphQL, 패키징, GitHub Actions 흐름을 정리한 글입니다.",
-        href: "https://velog.io/@choi-hyk/posts",
-      },
-    ],
   },
   en: {
     profile: {
@@ -524,7 +402,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
       portfolio: "Portfolio",
       overview: "Overview",
       projects: "Projects",
-      writing: "Technical Writing",
       openSource: "Open Source",
       skills: "Skills",
       external: "External",
@@ -652,58 +529,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
           iconAlt: "Today in Tech icon",
         },
       ],
-      primaryCta: "View core projects",
-      secondaryCta: "Read technical notes",
-      flow: [
-        {
-          label: "Start",
-          title: "Define the problem",
-          description: "I frame AI features as service problems, not one-off demos.",
-        },
-        {
-          label: "Build",
-          title: "Design the structure",
-          description:
-            "I combine FastAPI, RAG, MCP, and automation into maintainable systems.",
-        },
-        {
-          label: "Proof",
-          title: "Show the evidence",
-          description:
-            "Organization projects, public tools, and technical writing prove the work.",
-        },
-      ],
-      ide: {
-        explorer: "Explorer",
-        terminal: "Terminal",
-        theme: "Theme",
-        light: "Light",
-        dark: "Palenight",
-        activeFile: "README.md",
-        terminalCommand: "npm run profile",
-        terminalStatus:
-          "FastAPI / RAG / MCP / Organization Projects / Technical Writing",
-        folders: {
-          root: "portfolio",
-          source: "src",
-          content: "content",
-        },
-      },
       github: "GitHub",
       velog: "Velog",
       email: "Email",
-      stats: [
-        "Synapsoft · FastAPI/RAG service development",
-        "Myongji University · Computer Engineering",
-        "Seoul, Korea · Open to backend/AI application roles",
-      ],
-      selectedProjects: {
-        eyebrow: "Selected Projects",
-        title: "Focused on organization projects and practical developer tools.",
-        description:
-          "The portfolio prioritizes projects that show FastAPI, MCP, agent workflows, voice interfaces, and NLP experience.",
-        cta: "View all projects",
-      },
     },
     about: {
       eyebrow: "About",
@@ -757,12 +585,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         "On **FastAPI-based backends**, I design **RAG**, **Agent Workflow**, and **automation systems**, focusing on **applying AI reliably to real services**.",
       note:
         "This page introduces the main projects I have built around these interests.\nYou can open each project detail page for the development process.",
-    },
-    writingPage: {
-      eyebrow: "Writing",
-      title: "Technical notes from development work",
-      description:
-        "Velog articles support the portfolio by explaining problems encountered in work and personal projects.",
     },
     projects: [
       {
@@ -824,29 +646,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         href: "https://github.com/choi-hyk/note_agent",
         stack: ["FastAPI", "LangServe", "OpenAI", "Python"],
         featured: false,
-      },
-    ],
-    writings: [
-      {
-        title: "[HippoBox] Getting started with HippoBox",
-        category: "Project",
-        description:
-          "A note on why HippoBox started and why FastAPI and MCP were selected for the project structure.",
-        href: "https://velog.io/@choi-hyk/Project-HippoBox-%EC%8B%9C%EC%9E%91%ED%95%98%EA%B8%B0",
-      },
-      {
-        title: "[FastAPI] Logical structure of sync/async",
-        category: "FastAPI",
-        description:
-          "A note about how sync and async functions are handled in FastAPI with ASGI and blocking/non-blocking behavior.",
-        href: "https://velog.io/@choi-hyk/posts",
-      },
-      {
-        title: "[Mini Project] Building a Velog backup program",
-        category: "Automation",
-        description:
-          "A note about building a Markdown backup and automation tool for Velog with GraphQL, packaging, and GitHub Actions.",
-        href: "https://velog.io/@choi-hyk/posts",
       },
     ],
   },

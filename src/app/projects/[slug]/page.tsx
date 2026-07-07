@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ProjectDetailCanvas } from "@/components/portfolio-detail-canvas";
+import { ProjectDetailCanvas } from "@/components/pages/project-detail/project-detail-canvas";
 import { defaultLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 

@@ -2,8 +2,8 @@
 
 import { GithubIcon } from "@/components/icons/github-icon";
 import { VelogIcon } from "@/components/icons/velog-icon";
-import { usePortfolioViewport } from "@/components/portfolio-viewport-context";
-import { Tooltip } from "@/components/tooltip";
+import { usePortfolioViewport } from "@/components/shell/viewport-context";
+import { Tooltip } from "@/components/ui/tooltip";
 import {
   BookOpenText,
   Braces,

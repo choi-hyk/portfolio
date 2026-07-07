@@ -2,7 +2,6 @@
 
 import {
   ArrowUpRight,
-  BookOpenText,
   Braces,
   ChevronsLeft,
   Home,
@@ -13,12 +12,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { GithubIcon } from "@/components/icons/github-icon";
-import { PortfolioViewportProvider } from "@/components/portfolio-viewport-context";
+import { PortfolioViewportProvider } from "@/components/shell/viewport-context";
 import { VelogIcon } from "@/components/icons/velog-icon";
-import { Tooltip } from "@/components/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { Dictionary } from "@/i18n/dictionaries";
 
-type PortfolioShellProps = {
+type PortfolioFrameProps = {
   children: ReactNode;
   navigation: Dictionary["nav"];
   profile: Dictionary["profile"];
@@ -42,13 +41,13 @@ type SidebarSection = {
 
 const sidebarProjectLimit = 4;
 
-export function PortfolioShell({
+export function PortfolioFrame({
   children,
   navigation,
   profile,
   linkLabels,
   projects,
-}: PortfolioShellProps) {
+}: PortfolioFrameProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
@@ -70,7 +69,7 @@ export function PortfolioShell({
   );
 }
 
-type PortfolioSidebarProps = Omit<PortfolioShellProps, "children"> & {
+type PortfolioSidebarProps = Omit<PortfolioFrameProps, "children"> & {
   collapsed: boolean;
   onToggle: () => void;
 };
@@ -105,12 +104,6 @@ function PortfolioSidebar({
       href: "/projects",
       icon: Braces,
       children: projectChildren,
-    },
-    {
-      id: "writing",
-      label: navigation.writing,
-      href: "/writing",
-      icon: BookOpenText,
     },
   ];
   const links = [

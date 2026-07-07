@@ -1,23 +1,23 @@
 import type { ReactNode } from "react";
-import { PortfolioShell } from "@/components/portfolio-shell";
+import { PortfolioFrame } from "@/components/shell/portfolio-frame";
 import { defaultLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 
-type PortfolioPageShellProps = {
+type PortfolioRootProps = {
   children: ReactNode;
 };
 
-export function PortfolioPageShell({ children }: PortfolioPageShellProps) {
+export function PortfolioRoot({ children }: PortfolioRootProps) {
   const dictionary = getDictionary(defaultLocale);
 
   return (
-    <PortfolioShell
+    <PortfolioFrame
       navigation={dictionary.nav}
       profile={dictionary.profile}
       linkLabels={dictionary.home}
       projects={dictionary.projects}
     >
       {children}
-    </PortfolioShell>
+    </PortfolioFrame>
   );
 }

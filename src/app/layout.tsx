@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Noto_Sans_KR } from "next/font/google";
-import { PortfolioPageShell } from "@/components/portfolio-page-shell";
+import { PortfolioRoot } from "@/components/shell/portfolio-root";
 import "./globals.css";
 
 const notoSansKr = Noto_Sans_KR({
@@ -30,7 +30,7 @@ export default function RootLayout({
       className={`${notoSansKr.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <PortfolioPageShell>{children}</PortfolioPageShell>
+        <PortfolioRoot>{children}</PortfolioRoot>
       </body>
     </html>
   );
