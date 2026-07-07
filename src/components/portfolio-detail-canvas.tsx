@@ -814,15 +814,18 @@ function getHippoBoxDetailCanvas(project: Project): {
       },
       {
         id: "github-status",
-        title: "Links",
+        title: "Info",
         kind: "note",
         order: 2,
         x: 65,
         y: 28,
         width: 24,
         markdown: [
-          `:github: [GitHub|HippoBox GitHub 저장소로 이동](${project.href})`,
-          ":package: [PyPI|HippoBox PyPI 패키지로 이동](https://pypi.org/project/hippobox/)",
+          "- :calendar: 2025.11 ~ 2026.2",
+          "- :stack: `FastAPI` `TypeScript` `MCP` `Qdrant`",
+          "",
+          `- :github: [GitHub|HippoBox GitHub 저장소로 이동](${project.href})`,
+          "- :package: [PyPI|HippoBox PyPI 패키지로 이동](https://pypi.org/project/hippobox/)",
         ].join("\n"),
       },
       {
