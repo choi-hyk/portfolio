@@ -4,11 +4,11 @@
 
 ```text
 src/app/          Next.js App Router 페이지
-src/components/   공용 UI 컴포넌트
-src/data/         정적 데이터 어댑터
-src/i18n/         언어 설정과 사전
+src/components/   공용 UI, 캔버스, 페이지 컴포넌트
+src/i18n/         언어 설정, 정적 사전, 프로젝트 메타데이터
 src/types/        프로젝트 내부 타입 선언
-content/          MDX 콘텐츠
+content/          향후 MDX 콘텐츠
+public/           이미지, 아이콘, 정적 자산
 harness/          프로젝트 규칙 문서
 ```
 
@@ -16,7 +16,7 @@ harness/          프로젝트 규칙 문서
 
 - React 컴포넌트 파일은 kebab-case를 사용한다: `project-card.tsx`.
 - React 컴포넌트 이름은 PascalCase를 사용한다: `ProjectCard`.
-- 데이터 파일은 kebab-case 또는 도메인명을 사용한다: `projects.ts`, `profile.ts`.
+- 데이터 파일은 kebab-case 또는 도메인명을 사용한다. 현재 정적 포트폴리오 데이터는 `src/i18n/dictionaries.ts`를 기준으로 둔다.
 - 변수와 함수는 camelCase를 사용한다.
 - 고정 설정값도 기본적으로 camelCase를 사용하되, 외부 생태계에서 대문자 상수를 요구하는 경우는 예외로 둔다.
 
@@ -48,7 +48,8 @@ harness/          프로젝트 규칙 문서
 
 - 캔버스 페이지는 공용 `WorkflowCanvas`와 `CanvasNode`, `CanvasEdge` 모델을 사용한다.
 - 루트 레이아웃은 공용 `PortfolioPageShell`을 한 번만 사용해 페이지 이동 중 사이드바 상태를 유지한다.
-- 경력과 프로젝트 상세 페이지는 각각 `/experience/[slug]`, `/projects/[slug]` 하위 경로를 사용한다.
+- 프로젝트 상세 페이지는 `/projects/[slug]` 하위 경로를 사용한다.
+- 프로젝트 상세 페이지를 추가할 때는 [페이지와 프로젝트 상세 구성 규칙](./pages.md)을 먼저 따른다.
 - 사이드바 상위 항목은 선택적인 `children`을 지원하며 하위 목록은 항상 표시한다.
 - 아이콘만 있는 버튼과 축소 사이드바 링크는 공용 `Tooltip`을 사용한다.
 - 툴팁은 버튼의 화면 배치를 고려해 방향을 지정하고, 뷰포트 경계에서는 반대 방향 또는 화면 안쪽으로 자동 보정한다.
@@ -65,6 +66,7 @@ harness/          프로젝트 규칙 문서
 - 엣지의 `side`는 `top`, `right`, `bottom`, `left`만 사용하며 해당 면의 중앙에 연결한다.
 - 방향 간선은 2px 진한 청록 실선과 화살촉으로, 무방향 간선은 2px 청록 점선으로 표시한다.
 - 노드 콘텐츠가 확장될 때 주변 노드가 겹치지 않도록 페이지 데이터의 좌표 간격을 충분히 확보한다.
+- public asset을 캔버스에서 렌더링할 때는 GitHub Pages base path 보정이 적용되는 기존 `WorkflowCanvas` 경로 처리 방식을 사용한다.
 
 ## 테스트
 

@@ -12,6 +12,7 @@ npm run lint:fix
 npm run typecheck
 npm run check
 npm run harness
+GITHUB_PAGES=true npm run build
 ```
 
 ## 명령어 역할
@@ -23,6 +24,7 @@ npm run harness
 - `npm run typecheck`: `tsc --noEmit`으로 타입 오류를 확인한다.
 - `npm run check`: 포맷, 린트, 타입 체크를 함께 실행한다.
 - `npm run harness`: `check` 후 production build까지 실행한다.
+- `GITHUB_PAGES=true npm run build`: GitHub Pages와 동일한 base path로 정적 export를 검증한다.
 
 ## 적용 규칙
 
@@ -32,6 +34,7 @@ npm run harness
 - Prettier와 충돌하는 ESLint 규칙은 `eslint-config-prettier`로 비활성화한다.
 - 타입 체크는 `tsconfig.json`과 Next.js 타입 설정을 기준으로 한다.
 - UI 또는 코드 변경 후 기본 검증은 `npm run harness`이다.
+- 배포 설정, public asset 경로, GitHub Pages 관련 변경은 `GITHUB_PAGES=true npm run build`를 추가로 실행한다.
 
 ## VS Code 규칙
 

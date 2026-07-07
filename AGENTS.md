@@ -12,6 +12,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 - `harness/README.md`
 - `harness/frontend.md`
+- `harness/pages.md`
+- `harness/deploy.md`
 - `harness/i18n.md`
 - `harness/commit.md`
 - `harness/faas.md`
