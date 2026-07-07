@@ -1104,7 +1104,7 @@ function MarkdownNode({
   const isSnugOutlineImage = node.image?.frame === "outline" && node.image.fit === "contain";
   const imageClassName = node.image?.frameHeight
     ? isSnugOutlineImage
-      ? "max-h-full max-w-full rounded-2xl border border-teal-200 object-contain"
+      ? "h-auto w-auto max-h-full max-w-full rounded-2xl border border-teal-200 object-contain"
       : `h-full w-full ${node.image.fit === "cover" ? "object-cover" : "object-contain"}`
     : "h-auto w-full";
   const nodeLayer = isSection || node.layer === "background" ? "z-0" : "z-20";
