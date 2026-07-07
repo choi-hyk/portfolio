@@ -78,6 +78,7 @@ export type CanvasEdge = {
   from: CanvasEdgeEndpoint;
   to: CanvasEdgeEndpoint;
   directed?: boolean;
+  bidirectional?: boolean;
 };
 
 export type CanvasShell = {
@@ -875,6 +876,17 @@ function CanvasEdges({
         >
           <path d="M0,0 L10,5 L0,10 Z" className="fill-current" />
         </marker>
+        <marker
+          id="canvas-arrow-start"
+          markerHeight="10"
+          markerUnits="userSpaceOnUse"
+          markerWidth="10"
+          orient="auto"
+          refX="1"
+          refY="5"
+        >
+          <path d="M10,0 L0,5 L10,10 Z" className="fill-current" />
+        </marker>
       </defs>
       {edges.map((edge, index) => {
         const fromNode = nodes.find((node) => node.id === edge.from.nodeId);
@@ -898,9 +910,16 @@ function CanvasEdges({
             d={path}
             className={[
               "workflow-edge fill-none",
-              edge.directed ? "workflow-edge-directed" : "workflow-edge-undirected",
+              edge.directed || edge.bidirectional
+                ? "workflow-edge-directed"
+                : "workflow-edge-undirected",
             ].join(" ")}
-            markerEnd={edge.directed ? "url(#canvas-arrow)" : undefined}
+            markerEnd={
+              edge.directed || edge.bidirectional ? "url(#canvas-arrow)" : undefined
+            }
+            markerStart={
+              edge.bidirectional ? "url(#canvas-arrow-start)" : undefined
+            }
             stroke="currentColor"
             pathLength={1}
             strokeLinecap="round"

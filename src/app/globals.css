@@ -91,6 +91,14 @@ html {
   box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.16);
 }
 
+.workflow-node[data-appearance="technology"] h2,
+.workflow-node[data-appearance="technology"] h3,
+.workflow-node[data-appearance="technology"] p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .workflow-edge {
   animation: workflow-edge-draw 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
   stroke-dasharray: 1;
