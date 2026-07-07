@@ -125,13 +125,16 @@ const BASE_CANVAS_SIZE = {
   height: 1400,
 };
 const CANVAS_EXPANSION_PADDING = 160;
-const NODE_REVEAL_STEP_MS = 260;
-const EDGE_REVEAL_STEP_MS = 120;
-const EDGE_REVEAL_OFFSET_MS = 320;
-const MIN_ZOOM = 0.7;
-const MAX_ZOOM = 1.5;
-const ZOOM_STEP = 0.1;
+const NODE_REVEAL_STEP_MS = 40;
+const EDGE_REVEAL_STEP_MS = 16;
+const EDGE_REVEAL_OFFSET_MS = 80;
 const DEFAULT_ZOOM = 0.7;
+const DISPLAY_ZOOM_BASE = DEFAULT_ZOOM;
+const MIN_DISPLAY_ZOOM = 0.5;
+const MAX_DISPLAY_ZOOM = 1.5;
+const MIN_ZOOM = DEFAULT_ZOOM * MIN_DISPLAY_ZOOM;
+const MAX_ZOOM = DEFAULT_ZOOM * MAX_DISPLAY_ZOOM;
+const ZOOM_STEP = DEFAULT_ZOOM * 0.1;
 const INITIAL_CONTENT_GAP = 32;
 const INITIAL_CONTENT_TOP = 24;
 const defaultCanvasLabels: WorkflowCanvasLabels = {
@@ -186,8 +189,6 @@ export function WorkflowCanvas({
   const nodeAnimationOrder = getCanvasRenderOrder(nodes);
   const equalHeightGroups = getEqualHeightGroups(nodes, nodeHeights);
   const orderedNodes = getCanvasOrderedNodes(nodes);
-  const edgeAnimationBaseDelay =
-    nodes.length * NODE_REVEAL_STEP_MS + EDGE_REVEAL_OFFSET_MS;
 
   const updateZoom = useCallback(
     (nextZoom: number, anchor?: CanvasPoint) => {
@@ -543,7 +544,7 @@ export function WorkflowCanvas({
           nodes={nodes}
           nodeHeights={nodeHeights}
           canvasSize={contentSize}
-          animationBaseDelay={edgeAnimationBaseDelay}
+          nodeAnimationOrder={nodeAnimationOrder}
         />
 
         <div className="relative h-full w-full space-y-4 p-4 md:block md:space-y-0 md:p-0">
@@ -619,6 +620,7 @@ function CanvasZoomControls({
   const disabledClass = "cursor-default text-zinc-300";
   const isZoomInDisabled = zoom >= MAX_ZOOM;
   const isZoomOutDisabled = zoom <= MIN_ZOOM;
+  const displayZoom = getDisplayZoom(zoom);
 
   return (
     <div className="overflow-hidden rounded-md border border-teal-200 bg-white/90 shadow-md shadow-teal-900/10 backdrop-blur">
@@ -637,7 +639,7 @@ function CanvasZoomControls({
         aria-live="polite"
         className="border-y border-zinc-200 px-1 py-1 text-center text-[10px] font-medium text-zinc-500"
       >
-        {Math.round(zoom * 100)}%
+        {Math.round(displayZoom * 100)}%
       </div>
       <Tooltip content={labels.zoomOut} placement="left">
         <button
@@ -857,7 +859,7 @@ type CanvasEdgesProps = {
   nodes: CanvasNode[];
   nodeHeights: CanvasNodeHeights;
   canvasSize: CanvasSize;
-  animationBaseDelay: number;
+  nodeAnimationOrder: Map<string, number>;
 };
 
 function CanvasEdges({
@@ -865,7 +867,7 @@ function CanvasEdges({
   nodes,
   nodeHeights,
   canvasSize,
-  animationBaseDelay,
+  nodeAnimationOrder,
 }: CanvasEdgesProps) {
   return (
     <svg
@@ -905,6 +907,10 @@ function CanvasEdges({
           return null;
         }
 
+        const edgeAnimationOrder = Math.max(
+          nodeAnimationOrder.get(fromNode.id) ?? 0,
+          nodeAnimationOrder.get(toNode.id) ?? 0,
+        );
         const path = getEdgePath(
           fromNode,
           edge.from.side,
@@ -934,7 +940,11 @@ function CanvasEdges({
             strokeLinecap="round"
             strokeWidth="2"
             style={{
-              animationDelay: `${animationBaseDelay + index * EDGE_REVEAL_STEP_MS}ms`,
+              animationDelay: `${
+                edgeAnimationOrder * NODE_REVEAL_STEP_MS +
+                EDGE_REVEAL_OFFSET_MS +
+                index * EDGE_REVEAL_STEP_MS
+              }ms`,
             }}
             vectorEffect="non-scaling-stroke"
           />
@@ -1286,9 +1296,10 @@ function MarkdownBody({ markdown, kind, shell, appearance }: MarkdownBodyProps) 
           return (
             <Heading
               key={`${block.raw}-${index}`}
-              className={`font-semibold tracking-tight ${getHeadingSize(block.level, appearance)} ${
-                kind === "code" ? "text-white" : shell.strong
-              }`}
+              className={`font-semibold tracking-tight ${getHeadingSize(
+                block.level,
+                appearance,
+              )} ${getHeadingTone(block.level, appearance, kind, shell)}`}
             >
               {renderInline(block.text, shell, kind)}
             </Heading>
@@ -1542,6 +1553,27 @@ function getHeadingSize(
     : "text-xs";
 }
 
+function getHeadingTone(
+  level: 1 | 2 | 3,
+  appearance: NonNullable<CanvasNode["appearance"]>,
+  kind: CanvasNodeKind,
+  shell: CanvasShell,
+) {
+  if (kind === "code") {
+    return "text-white";
+  }
+
+  if (level === 1 && appearance === "transparent") {
+    return "border-l-4 border-teal-400 pl-4 text-teal-800 drop-shadow-[0_1px_0_rgba(20,184,166,0.12)]";
+  }
+
+  if (level === 2 && appearance === "feature") {
+    return "text-teal-800";
+  }
+
+  return shell.strong;
+}
+
 function renderInline(
   text: string,
   shell: CanvasShell,
@@ -1706,7 +1738,11 @@ function clampPan(
 }
 
 function normalizeZoom(zoom: number) {
-  return Math.round(clamp(zoom, MIN_ZOOM, MAX_ZOOM) * 100) / 100;
+  return Math.round(clamp(zoom, MIN_ZOOM, MAX_ZOOM) * 1000) / 1000;
+}
+
+function getDisplayZoom(zoom: number) {
+  return zoom / DISPLAY_ZOOM_BASE;
 }
 
 function getInitialViewportPan(
