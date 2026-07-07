@@ -48,10 +48,19 @@ export type CanvasNode = {
   title?: string;
   titleHref?: string;
   titleTooltip?: string;
-  appearance?: "default" | "transparent" | "section" | "technology";
+  appearance?: "default" | "transparent" | "section" | "technology" | "feature";
   icon?: {
     src: string;
     alt: string;
+  };
+  image?: {
+    src: string;
+    alt: string;
+    width: number;
+    height: number;
+    frame?: "card" | "outline" | "plain";
+    frameHeight?: number;
+    fit?: "cover" | "contain";
   };
   markdown: string;
   equalHeightGroup?: string;
@@ -1071,6 +1080,7 @@ function MarkdownNode({
   const appearance = {
     default: `rounded-md border border-zinc-200 p-4 shadow-md shadow-zinc-900/8 backdrop-blur ${variant}`,
     transparent: "border-transparent bg-transparent p-0 shadow-none backdrop-blur-0",
+    feature: "border-transparent bg-transparent p-0 shadow-none backdrop-blur-0",
     section:
       "rounded-xl border border-teal-200 bg-teal-50/40 p-5 shadow-sm shadow-zinc-900/5",
     technology:
@@ -1078,6 +1088,15 @@ function MarkdownNode({
   }[node.appearance ?? "default"];
   const isSection = node.appearance === "section";
   const isTechnology = node.appearance === "technology";
+  const imageFrameStyle = node.image?.frameHeight
+    ? ({ height: node.image.frameHeight } as CSSProperties)
+    : undefined;
+  const isSnugOutlineImage = node.image?.frame === "outline" && node.image.fit === "contain";
+  const imageClassName = node.image?.frameHeight
+    ? isSnugOutlineImage
+      ? "max-h-full max-w-full rounded-2xl border border-teal-200 object-contain"
+      : `h-full w-full ${node.image.fit === "cover" ? "object-cover" : "object-contain"}`
+    : "h-auto w-full";
   const nodeLayer = isSection || node.layer === "background" ? "z-0" : "z-20";
   const inlineIconSize = isTechnology ? 36 : isSection ? 22 : 28;
 
@@ -1177,6 +1196,29 @@ function MarkdownNode({
           />
         </div>
       ) : null}
+      {node.image ? (
+        <div
+          style={imageFrameStyle}
+          className={
+            isSnugOutlineImage
+              ? "flex items-center justify-center overflow-hidden bg-transparent"
+              : node.image.frame === "outline"
+              ? "flex items-center justify-center overflow-hidden rounded-2xl border border-teal-200 bg-transparent"
+              : node.image.frame === "plain" || node.appearance === "transparent"
+                ? "overflow-hidden"
+                : "overflow-hidden rounded-2xl border border-teal-100 bg-white/70 shadow-sm shadow-zinc-900/5"
+          }
+        >
+          <Image
+            src={node.image.src}
+            alt={node.image.alt}
+            width={node.image.width}
+            height={node.image.height}
+            unoptimized
+            className={imageClassName}
+          />
+        </div>
+      ) : null}
       {node.markdown.trim() ? (
         <MarkdownBody
           markdown={node.markdown}
@@ -1228,7 +1270,7 @@ function MarkdownBody({ markdown, kind, shell, appearance }: MarkdownBodyProps) 
   return (
     <div
       className={
-        appearance === "transparent"
+        appearance === "transparent" || appearance === "feature"
           ? "space-y-2 text-base leading-7"
           : appearance === "technology"
             ? "min-w-0 space-y-0.5 text-xs leading-5"
@@ -1482,16 +1524,22 @@ function getHeadingSize(
   appearance: NonNullable<CanvasNode["appearance"]>,
 ) {
   if (level === 1) {
-    return appearance === "transparent"
+    return appearance === "transparent" || appearance === "feature"
       ? "text-3xl leading-tight md:text-4xl"
       : "text-lg";
   }
 
   if (level === 2) {
+    if (appearance === "feature") {
+      return "text-xl leading-8 md:text-2xl";
+    }
+
     return appearance === "section" ? "text-base leading-6" : "text-sm";
   }
 
-  return appearance === "transparent" ? "text-xl leading-8 md:text-2xl" : "text-xs";
+  return appearance === "transparent" || appearance === "feature"
+    ? "text-xl leading-8 md:text-2xl"
+    : "text-xs";
 }
 
 function renderInline(
