@@ -379,7 +379,7 @@ export function getBlueprint4AgentDetailCanvas(
       order: 5,
       x: 111,
       y: 15,
-      width: 72,
+      width: 50,
       markdown:
         "## 실행 방법\n\n### 1. 저장소 복제\n\n```bash\ngit clone https://github.com/Blueprint4Agent/b4fastapi.git\ncd b4fastapi\n```\n\n### 2. 백엔드 서버 실행\n\n```bash\ncd src/backend\nuv sync\nuv run uvicorn b4fastapi.server:app --reload\n```\n\n### 3. 프론트엔드 실행\n\n```bash\ncd src/frontend\nnpm install\nnpm run dev\n```\n\n### 4. Tauri 데스크톱 실행\n\n```bash\ncd src/frontend\nnpm run tauri dev\n```\n\n**Backend Server**, **Frontend Dev Server**, **Tauri Desktop App**을 각각 실행해 웹과 데스크톱 환경을 함께 확인할 수 있습니다.",
     },

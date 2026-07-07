@@ -62,6 +62,11 @@ export type CanvasNode = {
     frameHeight?: number;
     fit?: "cover" | "contain";
   };
+  embed?: {
+    src: string;
+    title: string;
+    height: number;
+  };
   markdown: string;
   equalHeightGroup?: string;
   excludeFromSequence?: boolean;
@@ -1226,6 +1231,21 @@ function MarkdownNode({
             height={node.image.height}
             unoptimized
             className={imageClassName}
+          />
+        </div>
+      ) : null}
+      {node.embed ? (
+        <div
+          className="overflow-hidden rounded-2xl border border-teal-200 bg-white shadow-sm shadow-zinc-900/5"
+          style={{ height: node.embed.height }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <iframe
+            src={node.embed.src}
+            title={node.embed.title}
+            loading="lazy"
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+            className="h-full w-full border-0 bg-white"
           />
         </div>
       ) : null}

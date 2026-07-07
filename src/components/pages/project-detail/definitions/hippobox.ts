@@ -65,10 +65,18 @@ const hippoboxArchitectureEdges: CanvasEdge[] = [
   },
 ];
 
-export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDefinition {
-  const architectureOrigin = { x: 13, y: 84 };
+export function getHippoBoxDetailCanvas(
+  project: Project,
+): ProjectDetailCanvasDefinition {
+  const architectureOrigin = { x: 13, y: 70 };
   const architectureX = (x: number) => architectureOrigin.x + x;
   const architectureY = (y: number) => architectureOrigin.y + y;
+  const featuresOrigin = { x: 101, y: 70 };
+  const featuresX = (x: number) => featuresOrigin.x + x;
+  const featuresY = (y: number) => featuresOrigin.y + y;
+  const outcomeOrigin = { x: 93, y: 171 };
+  const outcomeX = (x: number) => outcomeOrigin.x + x;
+  const outcomeY = (y: number) => outcomeOrigin.y + y;
 
   // Default system architecture layout pattern for project detail pages.
   // Future project architecture canvases should follow this structure:
@@ -360,19 +368,19 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       title: "Quick Start",
       kind: "note",
       order: 5,
-      x: architectureX(88),
-      y: architectureY(-77),
-      width: 82,
+      x: 111,
+      y: 15,
+      width: 50,
       markdown:
-        "## 실행 방법\n\n### 패키지로 실행\n\n```bash\npip install hippobox\n\n# 기본 실행\nhippobox run\n\n# 호스트와 포트를 지정해서 실행\nhippobox run --host 0.0.0.0 --port 8080\n```\n\n### 소스에서 실행\n\n**1. uv 설치**\n\n```bash\n# macOS / Linux\ncurl -LsSf https://astral.sh/uv/install.sh | sh\n\n# Windows PowerShell\nirm https://astral.sh/uv/install.ps1 | iex\n```\n\n**2. 백엔드 의존성 설치**\n\n```bash\ncd src/backend\nuv sync\n```\n\n**3. 서버 실행**\n\n```bash\ncd src/backend\nuv run uvicorn hippobox.server:app --reload\n```\n\n**4. 프론트엔드 실행 및 빌드**\n\n```bash\ncd src/frontend\nnpm install\nnpm run dev       # backend serving용 dist watch build\nnpm run dev:vite  # Vite 개발 서버, 기본 5173\nnpm run build     # backend serving용 정적 파일 빌드\nnpm run preview   # 빌드 결과 미리보기\n```",
+        "## 실행 방법\n\n**1. 패키지 설치 및 실행**\n\n```bash\npip install hippobox\nhippobox run\n```\n\n**2. 백엔드 서버 실행**\n\n```bash\ncd src/backend\nuv sync\nuv run uvicorn hippobox.server:app --reload\n```\n\n**3. 프론트엔드 실행 및 빌드**\n\n```bash\ncd src/frontend\nnpm install\nnpm run dev\nnpm run dev:vite\nnpm run build\n```",
     },
     {
       id: "features-title",
       kind: "note",
       appearance: "transparent",
       order: 26,
-      x: architectureX(88),
-      y: architectureY(0),
+      x: featuresX(0),
+      y: featuresY(0),
       width: 30,
       markdown: "# Features",
     },
@@ -381,8 +389,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       kind: "note",
       appearance: "feature",
       order: 28,
-      x: architectureX(88),
-      y: architectureY(36),
+      x: featuresX(0),
+      y: featuresY(36),
       width: 40,
       markdown:
         "## Knowledge UI\n\nHippoBox는 저장된 지식을 사람이 직접 관리할 수 있는 **Knowledge UI**를 제공합니다. 지식은 **Topic** 단위로 분류되고, 제목·태그·본문을 함께 저장할 수 있으며, 본문은 **Markdown 기반 지식**으로 관리됩니다.",
@@ -392,8 +400,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       kind: "note",
       appearance: "transparent",
       order: 27,
-      x: architectureX(88),
-      y: architectureY(5),
+      x: featuresX(0),
+      y: featuresY(5),
       width: 40,
       image: {
         src: "/images/hippobox-guide/step-6.png",
@@ -411,8 +419,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       kind: "note",
       appearance: "feature",
       order: 30,
-      x: architectureX(130),
-      y: architectureY(36),
+      x: featuresX(42),
+      y: featuresY(36),
       width: 40,
       markdown:
         "## Hippo Search\n\n**Hippo Search(VDB)**는 저장된 지식을 임베딩한 뒤 의미 기반으로 검색하는 기능입니다. 단순 키워드 매칭이 아니라 질문의 의미와 가까운 지식을 찾아 **AI Agent가 필요한 컨텍스트**를 안정적으로 가져오도록 설계했습니다.",
@@ -422,8 +430,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       kind: "note",
       appearance: "transparent",
       order: 29,
-      x: architectureX(130),
-      y: architectureY(5),
+      x: featuresX(42),
+      y: featuresY(5),
       width: 40,
       image: {
         src: "/images/hippobox-guide/step-3.png",
@@ -441,8 +449,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       kind: "note",
       appearance: "feature",
       order: 32,
-      x: architectureX(88),
-      y: architectureY(79),
+      x: featuresX(0),
+      y: featuresY(79),
       width: 40,
       markdown:
         "## AI Agent Knowledge CRUD\n\nHippoBox는 **FastAPI-MCP**를 통해 Knowledge CRUD API를 **MCP Tool**로 제공합니다. Claude, Cursor, Codex 같은 MCP 클라이언트는 별도 전용 API 구현 없이 동일한 **Knowledge API**를 호출할 수 있습니다.",
@@ -452,8 +460,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       kind: "note",
       appearance: "transparent",
       order: 31,
-      x: architectureX(88),
-      y: architectureY(48),
+      x: featuresX(0),
+      y: featuresY(48),
       width: 40,
       image: {
         src: "/images/hippobox-guide/step-4.png",
@@ -471,8 +479,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       kind: "note",
       appearance: "feature",
       order: 34,
-      x: architectureX(130),
-      y: architectureY(79),
+      x: featuresX(42),
+      y: featuresY(79),
       width: 40,
       markdown:
         "## Terminal Workflow\n\nMCP 클라이언트에서 HippoBox 도구를 호출하면 Agent가 Knowledge API를 통해 실제 지식 항목을 생성하고 결과를 반환합니다. 터미널 출력에서는 **Frontend / Backend 지식 항목 생성 흐름**을 확인할 수 있습니다.",
@@ -482,8 +490,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       kind: "note",
       appearance: "transparent",
       order: 33,
-      x: architectureX(130),
-      y: architectureY(48),
+      x: featuresX(42),
+      y: featuresY(48),
       width: 40,
       image: {
         src: "/images/hippobox-guide/step-5_2.png",
@@ -501,8 +509,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       kind: "note",
       appearance: "transparent",
       order: 35,
-      x: architectureX(80),
-      y: architectureY(110),
+      x: outcomeX(0),
+      y: outcomeY(0),
       width: 40,
       markdown:
         "# Results\n\n**사람과 AI가 하나의 Knowledge Base를 함께 사용할 수 있도록 만들었습니다.**\n\nHippoBox는 제가 처음 목표로 했던 **Local-first Knowledge Platform**을 실제로 구현한 프로젝트입니다. **Markdown 기반**으로 지식을 관리하고, **MCP**를 통해 AI Agent와 연결하며, **Semantic Search**를 통해 필요한 지식을 의미 기반으로 찾을 수 있도록 구성했습니다.\n\n사용자는 하나의 **Knowledge Base**만 관리하면 되고, **Claude, Cursor, Codex** 같은 AI Agent는 동일한 **Knowledge API**를 통해 같은 지식을 활용할 수 있습니다. 사람이 관리한 지식을 AI도 자연스럽게 활용하는 환경을 만드는 것이 HippoBox의 가장 큰 결과였습니다.",
@@ -512,8 +520,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
       kind: "note",
       appearance: "transparent",
       order: 36,
-      x: architectureX(130),
-      y: architectureY(110),
+      x: outcomeX(50),
+      y: outcomeY(0),
       width: 40,
       markdown:
         "# Lessons Learned\n\n**AI 기능을 만드는 것보다 AI가 활용하기 쉬운 구조를 만드는 것이 더 중요했습니다.**\n\nHippoBox를 개발하면서 **FastAPI 기반 백엔드**, **MCP 서버**, 그리고 **RAG 기반 Semantic Search**를 직접 설계하고 구현하며 AI 친화적인 서비스 구조를 고민할 수 있었습니다.\n\n또 하나 크게 느낀 점은 에이전틱 코딩을 반복적으로 활용하려면 프로젝트를 처음부터 다시 만드는 것이 아니라, 인증, 배포, 프로젝트 구조 같은 기반이 미리 준비되어 있어야 한다는 것이었습니다. 그래서 HippoBox에서 얻은 경험을 바탕으로 AI 애플리케이션을 빠르게 시작할 수 있는 **Blueprint4Agent(B4A)** 프로젝트를 이어서 개발하게 되었습니다.",
@@ -527,10 +535,12 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
         kind: "note",
         appearance: "transparent",
         order: 1,
-        x: 13,
-        y: 28,
+        x: 26,
+        y: 8,
         width: 50,
         markdown: [
+          "# HippoBox",
+          "",
           "**HippoBox는 개인 지식을 체계적으로 관리하고 AI Agent가 활용할 수 있도록 설계한 Knowledge Management Platform입니다.**",
           "",
           "**FastAPI와 FastAPI-MCP**를 기반으로 구축한 통합 지식 관리 서비스로, 지식 항목에 대한 **CRUD(Create, Read, Update, Delete)**, 임베딩 기반 **Semantic Search**, **MCP(Model Context Protocol) Tool Integration**을 제공합니다. 이를 통해 **Claude, Cursor, Codex** 등 MCP를 지원하는 다양한 AI 클라이언트에서 동일한 **Knowledge API**를 일관된 방식으로 활용할 수 있습니다.",
@@ -539,18 +549,19 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
         ].join("\n"),
       },
       {
-        id: "hippobox-banner",
+        id: "project-icon",
         kind: "note",
         appearance: "transparent",
         excludeFromSequence: true,
         x: 13,
-        y: 6,
-        width: 38,
+        y: 7,
+        width: 10,
         image: {
-          src: "/images/hippobox-banner.png",
-          alt: "HippoBox banner",
-          width: 5330,
-          height: 1793,
+          src: "/hippobox.svg",
+          alt: "HippoBox icon",
+          width: 120,
+          height: 120,
+          frame: "plain",
         },
         markdown: "",
       },
@@ -559,8 +570,8 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
         title: "Info",
         kind: "note",
         order: 2,
-        x: 65,
-        y: 28,
+        x: 82,
+        y: 10,
         width: 24,
         markdown: [
           "- :calendar: 2025.11 ~ 2026.2",
@@ -576,7 +587,7 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
         appearance: "transparent",
         order: 3,
         x: 13,
-        y: 51,
+        y: 37,
         width: 43,
         markdown: [
           "# Project Goals",
@@ -596,7 +607,7 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
         kind: "note",
         order: 4,
         x: 58,
-        y: 58,
+        y: 42,
         width: 27,
         markdown: [
           "",
@@ -612,4 +623,3 @@ export function getHippoBoxDetailCanvas(project: Project): ProjectDetailCanvasDe
     edges: hippoboxArchitectureEdges,
   };
 }
-

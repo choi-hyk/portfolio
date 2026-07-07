@@ -11,7 +11,7 @@ export function getTodayInTechDetailCanvas(
   const featuresOrigin = { x: 104, y: 62 };
   const featuresX = (x: number) => featuresOrigin.x + x;
   const featuresY = (y: number) => featuresOrigin.y + y;
-  const outcomeOrigin = { x: 13, y: 178 };
+  const outcomeOrigin = { x: 96, y: 163 };
   const outcomeX = (x: number) => outcomeOrigin.x + x;
   const outcomeY = (y: number) => outcomeOrigin.y + y;
 
@@ -89,15 +89,19 @@ export function getTodayInTechDetailCanvas(
       ].join("\n"),
     },
     {
-      id: "quick-start",
-      title: "Quick Start",
+      id: "website-preview",
+      title: "Website Preview",
       kind: "note",
       order: 5,
-      x: 100,
-      y: 16,
-      width: 40,
-      markdown:
-        "```bash\npython3 -m venv .venv\n.venv/bin/python -m pip install -e .\nnpm install\n```\n\n```bash\nmake collect\nmake preprocess\nmake enrich\nmake write\nmake build\nmake serve\n```\n\n```bash\nOPENAI_API_KEY=sk-... make generate-openai\nmake deploy\n```",
+      x: 110,
+      y: 10,
+      width: 64,
+      embed: {
+        src: "https://todayintech.github.io/todayintech/",
+        title: "Today in Tech website preview",
+        height: 640,
+      },
+      markdown: "",
     },
     {
       id: "architecture-title",
@@ -460,7 +464,7 @@ export function getTodayInTechDetailCanvas(
       appearance: "transparent",
       order: 30,
       x: outcomeX(44),
-      y: outcomeY(4),
+      y: outcomeY(0),
       width: 40,
       markdown:
         "# Lessons Learned\n\n**좋은 AI 큐레이션은 좋은 모델보다 좋은 데이터 흐름에서 시작되었습니다.**\n\nToday in Tech를 개발하면서 AI가 높은 품질의 결과를 생성하기 위해서는 모델 자체보다 어떤 데이터를 수집하고, 어떤 근거를 제공하며, 어떻게 추적 가능한 형태로 관리하는지가 더 중요하다는 점을 경험했습니다.\n\nCollector Strategy, 중복 제거, Evidence 기반 Enrichment, AI Writer 입력 설계, 운영 Trace 관리까지 하나의 파이프라인으로 설계하면서 AI 기반 콘텐츠 서비스를 안정적으로 운영하기 위한 데이터 처리와 자동화 구조를 체계적으로 정리할 수 있었습니다.",
