@@ -241,11 +241,12 @@ export function getSayItOkDetailCanvas(
       y: 7,
       width: 10,
       image: {
+        role: "icon",
         src: "/say-it-ok.png",
         alt: "말하면 OK icon",
         width: 120,
         height: 120,
-        frame: "plain",
+        frame: "outline",
       },
       markdown: "",
     },
@@ -480,6 +481,7 @@ export function getSayItOkDetailCanvas(
 
   return {
     nodes,
+    architectureNodeIds: architectureNodes.map((node) => node.id),
     edges: sayItOkArchitectureEdges,
   };
 }

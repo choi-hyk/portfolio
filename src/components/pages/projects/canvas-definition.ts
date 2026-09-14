@@ -1,7 +1,4 @@
-import type {
-  CanvasEdge,
-  CanvasNode,
-} from "@/components/canvas/workflow-canvas";
+import type { CanvasEdge, CanvasNode } from "@/components/canvas/workflow-canvas";
 import type { Project } from "@/types/project";
 
 type ProjectOverviewPage = {

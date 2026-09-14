@@ -6,7 +6,9 @@ import { getSayItOkDetailCanvas } from "./say-it-ok";
 import { getTodayInTechDetailCanvas } from "./today-in-tech";
 import type { ProjectDetailCanvasDefinition } from "./types";
 
-export function getProjectDetailCanvas(project: Project): ProjectDetailCanvasDefinition {
+export function getProjectDetailCanvas(
+  project: Project,
+): ProjectDetailCanvasDefinition {
   if (project.slug === "hippobox") {
     return getHippoBoxDetailCanvas(project);
   }

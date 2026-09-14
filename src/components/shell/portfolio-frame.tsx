@@ -4,13 +4,15 @@ import {
   ArrowUpRight,
   Braces,
   ChevronsLeft,
+  CircleHelp,
   Home,
+  Presentation,
   type LucideIcon,
   Mail,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { PortfolioViewportProvider } from "@/components/shell/viewport-context";
 import { VelogIcon } from "@/components/icons/velog-icon";
@@ -48,12 +50,34 @@ export function PortfolioFrame({
   linkLabels,
   projects,
 }: PortfolioFrameProps) {
+  const pathname = usePathname();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  useEffect(() => {
+    const handleSidebarShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "b") {
+        event.preventDefault();
+        setIsSidebarCollapsed((value) => !value);
+      }
+    };
+
+    window.addEventListener("keydown", handleSidebarShortcut);
+    return () => window.removeEventListener("keydown", handleSidebarShortcut);
+  }, []);
+  const topLinks = [
+    { href: "/", label: navigation.overview, icon: Home },
+    { href: "/projects", label: navigation.projects, icon: Braces },
+    { href: "/slides", label: navigation.document, icon: Presentation },
+  ];
+  const externalLinks = [
+    { href: profile.links.github, label: linkLabels.github, icon: GithubIcon },
+    { href: profile.links.velog, label: linkLabels.velog, icon: VelogIcon },
+    { href: `mailto:${profile.email}`, label: linkLabels.email, icon: Mail },
+  ];
 
   return (
     <PortfolioViewportProvider>
-      <section className="relative min-h-screen bg-white text-zinc-700">
-        <aside className="fixed bottom-3 left-3 top-3 z-30 hidden lg:block">
+      <section className="portfolio-page-frame relative min-h-screen bg-white text-zinc-700">
+        <aside className="portfolio-desktop-navigation fixed bottom-3 left-3 top-3 z-30">
           <PortfolioSidebar
             collapsed={isSidebarCollapsed}
             navigation={navigation}
@@ -63,6 +87,58 @@ export function PortfolioFrame({
             onToggle={() => setIsSidebarCollapsed((value) => !value)}
           />
         </aside>
+        <nav
+          aria-label={navigation.pagesLabel}
+          className="portfolio-top-navigation sticky top-3 z-30 mx-3 my-3 items-center gap-1 rounded-full border border-teal-200 bg-white p-1 shadow-md shadow-teal-900/10"
+        >
+          {topLinks.map(({ href, label, icon: Icon }) => {
+            const active =
+              pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`flex h-9 min-w-0 flex-1 items-center justify-center gap-2 rounded-full px-2 text-xs font-medium transition sm:text-sm ${active ? "bg-teal-100 text-teal-950 ring-1 ring-teal-200" : "text-zinc-600 hover:bg-teal-50 hover:text-teal-900"}`}
+              >
+                <Icon size={17} className="shrink-0" aria-hidden="true" />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
+          <div
+            role="group"
+            aria-label={navigation.external}
+            className="ml-1 flex shrink-0 items-center gap-1 border-l border-teal-100 pl-2"
+          >
+            {externalLinks.map(({ href, label, icon: Icon }) => (
+              <Tooltip key={href} content={label} placement="bottom">
+                <a
+                  href={href}
+                  aria-label={label}
+                  target={href.startsWith("http") ? "_blank" : undefined}
+                  rel={href.startsWith("http") ? "noreferrer" : undefined}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition hover:bg-teal-50 hover:text-teal-900"
+                >
+                  <Icon size={17} aria-hidden="true" />
+                </a>
+              </Tooltip>
+            ))}
+            <Tooltip content={navigation.canvasHelp} placement="bottom">
+              <button
+                type="button"
+                aria-label={navigation.canvasHelp}
+                onClick={() => {
+                  window.dispatchEvent(new Event("portfolio:show-canvas-hint"));
+                  window.dispatchEvent(new Event("portfolio:focus-canvas"));
+                }}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition hover:bg-teal-50 hover:text-teal-900"
+              >
+                <CircleHelp size={17} aria-hidden="true" />
+              </button>
+            </Tooltip>
+          </div>
+        </nav>
         <div className="min-w-0">{children}</div>
       </section>
     </PortfolioViewportProvider>
@@ -104,6 +180,12 @@ function PortfolioSidebar({
       href: "/projects",
       icon: Braces,
       children: projectChildren,
+    },
+    {
+      id: "document",
+      label: navigation.document,
+      href: "/slides",
+      icon: Presentation,
     },
   ];
   const links = [
@@ -148,11 +230,18 @@ function PortfolioSidebar({
             : "pointer-events-none -translate-x-2 opacity-0",
         ].join(" ")}
       >
-        <Tooltip content={navigation.expandSidebar} placement="right" className="mb-3">
+        <Tooltip
+          content={`${navigation.expandSidebar} · ⌘/Ctrl+B`}
+          placement="right"
+          className="mb-3"
+        >
           <button
             type="button"
             aria-label={navigation.expandSidebar}
-            onClick={onToggle}
+            onClick={() => {
+              onToggle();
+              window.dispatchEvent(new Event("portfolio:focus-canvas"));
+            }}
             className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-800 transition hover:bg-zinc-100"
           >
             <ChevronsLeft size={14} className="rotate-180" />
@@ -188,6 +277,22 @@ function PortfolioSidebar({
             </Tooltip>
           );
         })}
+        <Tooltip
+          content={navigation.canvasHelp}
+          placement="right"
+          className="absolute bottom-3 left-1/2 -translate-x-1/2"
+        >
+          <button
+            type="button"
+            aria-label={navigation.canvasHelp}
+            onClick={() =>
+              window.dispatchEvent(new Event("portfolio:show-canvas-hint"))
+            }
+            className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition hover:bg-teal-50 hover:text-teal-900"
+          >
+            <CircleHelp size={14} />
+          </button>
+        </Tooltip>
       </nav>
 
       <div
@@ -203,14 +308,17 @@ function PortfolioSidebar({
             {navigation.portfolio}
           </p>
           <Tooltip
-            content={navigation.collapseSidebar}
+            content={`${navigation.collapseSidebar} · ⌘/Ctrl+B`}
             placement="right"
             className="absolute right-3 top-3"
           >
             <button
               type="button"
               aria-label={navigation.collapseSidebar}
-              onClick={onToggle}
+              onClick={() => {
+                onToggle();
+                window.dispatchEvent(new Event("portfolio:focus-canvas"));
+              }}
               className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-teal-200 bg-white text-zinc-500 transition hover:border-teal-300 hover:bg-teal-100 hover:text-teal-900"
             >
               <ChevronsLeft size={15} />
@@ -291,7 +399,14 @@ function PortfolioSidebar({
           })}
         </div>
 
-        <div className="mt-auto" />
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event("portfolio:show-canvas-hint"))}
+          className="mt-auto flex h-8 items-center gap-2 rounded-md px-2 text-zinc-600 transition hover:bg-teal-50 hover:text-teal-900"
+        >
+          <CircleHelp size={14} className="shrink-0" />
+          <span className="truncate">{navigation.canvasHelp}</span>
+        </button>
       </div>
     </div>
   );
