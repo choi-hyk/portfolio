@@ -2,7 +2,10 @@
 
 import { GithubIcon } from "@/components/icons/github-icon";
 import { VelogIcon } from "@/components/icons/velog-icon";
-import { usePortfolioViewport } from "@/components/shell/viewport-context";
+import {
+  isScrollLayout,
+  usePortfolioViewport,
+} from "@/components/shell/viewport-context";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
   BookOpenText,
@@ -12,8 +15,11 @@ import {
   Code2,
   Globe,
   GraduationCap,
+  Keyboard,
   Mail,
+  Move,
   Package,
+  ZoomIn,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,9 +28,9 @@ import {
   type PointerEvent,
   type ReactNode,
   type TransitionEvent,
-  type WheelEvent,
   useCallback,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
   useState,
@@ -54,6 +60,7 @@ export type CanvasNode = {
     alt: string;
   };
   image?: {
+    role?: "icon";
     src: string;
     alt: string;
     width: number;
@@ -68,6 +75,7 @@ export type CanvasNode = {
     height: number;
   };
   markdown: string;
+  content?: ReactNode;
   equalHeightGroup?: string;
   excludeFromSequence?: boolean;
   layer?: "background" | "foreground";
@@ -116,12 +124,20 @@ export type WorkflowCanvasLabels = {
   zoomOut: string;
 };
 
+export type CanvasInteractionHint = {
+  drag: string;
+  zoom: string;
+  keyboard: string;
+  close: string;
+};
+
 type WorkflowCanvasProps = {
   label: string;
   nodes: CanvasNode[];
   edges: CanvasEdge[];
   shell: CanvasShell;
   labels?: WorkflowCanvasLabels;
+  interactionHint?: CanvasInteractionHint;
   occludedLeft?: number;
 };
 
@@ -173,6 +189,7 @@ export function WorkflowCanvas({
   edges,
   shell,
   labels = defaultCanvasLabels,
+  interactionHint,
   occludedLeft,
 }: WorkflowCanvasProps) {
   const portfolioViewport = usePortfolioViewport();
@@ -188,6 +205,9 @@ export function WorkflowCanvas({
   } | null>(null);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [isInteractionHintOpen, setIsInteractionHintOpen] = useState(false);
+  const [isInteractionHintClosing, setIsInteractionHintClosing] = useState(false);
+  const interactionHintTimerRef = useRef<number | null>(null);
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [isPanAnimated, setIsPanAnimated] = useState(false);
@@ -206,7 +226,57 @@ export function WorkflowCanvas({
     zoom,
   );
   const nodeAnimationOrder = getCanvasRenderOrder(nodes);
+  const mobileNodeOrder = getMobileNodeOrder(nodes);
   const equalHeightGroups = getEqualHeightGroups(nodes, nodeHeights);
+
+  const dismissInteractionHint = () => {
+    window.localStorage.setItem("portfolio-canvas-hint-seen", "true");
+    setIsInteractionHintClosing(true);
+    window.setTimeout(() => {
+      setIsInteractionHintOpen(false);
+      setIsInteractionHintClosing(false);
+    }, 1000);
+  };
+
+  useEffect(() => {
+    if (!interactionHint) {
+      return;
+    }
+
+    const showHint = () => {
+      setIsInteractionHintClosing(false);
+      setIsInteractionHintOpen(true);
+      canvasRef.current?.focus();
+      interactionHintTimerRef.current = window.setTimeout(
+        () => dismissInteractionHint(),
+        5000,
+      );
+    };
+    const shouldShowInitially = !window.localStorage.getItem(
+      "portfolio-canvas-hint-seen",
+    );
+    if (shouldShowInitially) {
+      window.localStorage.setItem("portfolio-canvas-hint-seen", "true");
+    }
+    window.addEventListener("portfolio:show-canvas-hint", showHint);
+    const timer = shouldShowInitially ? window.setTimeout(showHint, 0) : undefined;
+    return () => {
+      if (timer) {
+        window.clearTimeout(timer);
+      }
+      window.removeEventListener("portfolio:show-canvas-hint", showHint);
+      if (interactionHintTimerRef.current) {
+        window.clearTimeout(interactionHintTimerRef.current);
+      }
+    };
+  }, [interactionHint]);
+
+  useEffect(() => {
+    const focusCanvas = () => canvasRef.current?.focus();
+    window.addEventListener("portfolio:focus-canvas", focusCanvas);
+    return () => window.removeEventListener("portfolio:focus-canvas", focusCanvas);
+  }, []);
+
   const orderedNodes = getCanvasOrderedNodes(nodes);
 
   const updateZoom = useCallback(
@@ -257,6 +327,7 @@ export function WorkflowCanvas({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (isScrollLayout()) return;
       if ((event.ctrlKey || event.metaKey) && !isEditableTarget(event.target)) {
         const isZoomIn =
           event.key === "+" || event.key === "=" || event.code === "NumpadAdd";
@@ -345,6 +416,7 @@ export function WorkflowCanvas({
   ]);
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (isScrollLayout()) return;
     if (!isSpacePressed) {
       return;
     }
@@ -362,6 +434,7 @@ export function WorkflowCanvas({
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (isScrollLayout()) return;
     if (!dragStartRef.current) {
       return;
     }
@@ -400,11 +473,17 @@ export function WorkflowCanvas({
     setIsPanning(false);
   };
 
-  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
+  const gestureZoomRef = useRef<number | null>(null);
+  const handleWheel = useEffectEvent((event: WheelEvent) => {
+    if (isScrollLayout()) return;
     event.preventDefault();
 
     if (event.ctrlKey || event.metaKey) {
-      const rect = event.currentTarget.getBoundingClientRect();
+      if (gestureZoomRef.current !== null) {
+        return;
+      }
+
+      const rect = canvasRef.current!.getBoundingClientRect();
 
       updateZoom(zoom - event.deltaY * 0.001, {
         x: event.clientX - rect.left,
@@ -439,7 +518,59 @@ export function WorkflowCanvas({
 
       return nextPan;
     });
-  };
+  });
+
+  const handleGesture = useEffectEvent((event: Event) => {
+    if (isScrollLayout()) {
+      gestureZoomRef.current = null;
+      return;
+    }
+    event.preventDefault();
+
+    if (event.type === "gesturestart") {
+      gestureZoomRef.current = zoom;
+      return;
+    }
+
+    if (event.type === "gestureend") {
+      gestureZoomRef.current = null;
+      return;
+    }
+
+    if (gestureZoomRef.current === null) {
+      return;
+    }
+
+    const gesture = event as Event & {
+      scale: number;
+      clientX: number;
+      clientY: number;
+    };
+    const rect = canvasRef.current!.getBoundingClientRect();
+    updateZoom(gestureZoomRef.current * gesture.scale, {
+      x: gesture.clientX - rect.left,
+      y: gesture.clientY - rect.top,
+    });
+  });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || portfolioViewport.scrollLayout) return;
+
+    const wheel = (event: WheelEvent) => handleWheel(event);
+    const gesture = (event: Event) => handleGesture(event);
+    canvas.addEventListener("wheel", wheel, { passive: false });
+    for (const type of ["gesturestart", "gesturechange", "gestureend"]) {
+      canvas.addEventListener(type, gesture, { passive: false });
+    }
+
+    return () => {
+      canvas.removeEventListener("wheel", wheel);
+      for (const type of ["gesturestart", "gesturechange", "gestureend"]) {
+        canvas.removeEventListener(type, gesture);
+      }
+    };
+  }, [portfolioViewport.scrollLayout]);
   const handleMiniMapNavigate = (point: CanvasPoint) => {
     setIsPanAnimated(false);
     const effectiveLeft = Math.min(effectiveOccludedLeft, canvasSize.width);
@@ -470,6 +601,13 @@ export function WorkflowCanvas({
     );
   };
   const handleNodeFocus = (node: CanvasNode) => {
+    if (isScrollLayout()) {
+      setSelectedNodeId(node.id);
+      document
+        .querySelector(`[data-node-id="${CSS.escape(node.id)}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     if (isSpacePressed || isPanning) {
       return;
     }
@@ -519,16 +657,64 @@ export function WorkflowCanvas({
     }
   };
 
+  const focusByKeyboard = useEffectEvent((direction: "previous" | "next") => {
+    handleStepFocus(direction);
+  });
+
+  useEffect(() => {
+    const handleCanvasKeyDown = (event: KeyboardEvent) => {
+      if (isScrollLayout()) {
+        if (
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.altKey &&
+          !event.shiftKey &&
+          !isEditableTarget(event.target) &&
+          ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)
+        ) {
+          event.preventDefault();
+          focusByKeyboard(
+            event.key === "ArrowUp" || event.key === "ArrowLeft" ? "previous" : "next",
+          );
+        }
+        return;
+      }
+      if (
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        event.shiftKey ||
+        isEditableTarget(event.target)
+      ) {
+        return;
+      }
+
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        focusByKeyboard(event.key === "ArrowLeft" ? "previous" : "next");
+        return;
+      }
+
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        event.preventDefault();
+        updateZoom(zoom + (event.key === "ArrowUp" ? ZOOM_STEP : -ZOOM_STEP));
+      }
+    };
+
+    window.addEventListener("keydown", handleCanvasKeyDown);
+    return () => window.removeEventListener("keydown", handleCanvasKeyDown);
+  }, [updateZoom, zoom]);
+
   return (
     <div
       ref={canvasRef}
       id="profile-canvas"
+      tabIndex={-1}
       aria-label={label}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerEnd}
       onPointerCancel={handlePointerEnd}
-      onWheel={handleWheel}
       className={[
         `workflow-canvas relative overflow-hidden border-0 ${shell.border} ${shell.editor}`,
         isSpacePressed || isPanning ? "cursor-grab active:cursor-grabbing" : "",
@@ -545,7 +731,7 @@ export function WorkflowCanvas({
     >
       <div
         className={[
-          "absolute left-0 top-0",
+          "workflow-surface absolute left-0 top-0",
           isPanAnimated
             ? "transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
             : "",
@@ -566,7 +752,7 @@ export function WorkflowCanvas({
           nodeAnimationOrder={nodeAnimationOrder}
         />
 
-        <div className="relative h-full w-full space-y-4 p-4 md:block md:space-y-0 md:p-0">
+        <div className="workflow-node-list relative flex h-auto w-full flex-col gap-6 p-4 md:block md:h-full md:space-y-0 md:p-0">
           {nodes.map((node) => (
             <MarkdownNode
               key={node.id}
@@ -582,16 +768,23 @@ export function WorkflowCanvas({
               onFocus={() => handleNodeFocus(node)}
               onResize={handleNodeResize}
               labels={labels}
+              mobileOrder={mobileNodeOrder.get(node.id)}
             />
           ))}
         </div>
       </div>
 
-      <div className="absolute bottom-4 right-4 z-20 flex items-end gap-2">
+      <div className="workflow-canvas-overlays absolute bottom-4 right-4 z-20 hidden items-end gap-2 md:flex">
         <CanvasZoomControls
           zoom={zoom}
-          onZoomIn={() => updateZoom(zoom + ZOOM_STEP)}
-          onZoomOut={() => updateZoom(zoom - ZOOM_STEP)}
+          onZoomIn={() => {
+            canvasRef.current?.focus();
+            updateZoom(zoom + ZOOM_STEP);
+          }}
+          onZoomOut={() => {
+            canvasRef.current?.focus();
+            updateZoom(zoom - ZOOM_STEP);
+          }}
           labels={labels}
         />
         <CanvasMiniMap
@@ -616,6 +809,37 @@ export function WorkflowCanvas({
         onNext={() => handleStepFocus("next")}
         labels={labels}
       />
+      {interactionHint && isInteractionHintOpen ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`fixed left-1/2 top-4 z-50 flex w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 items-center gap-4 rounded-full bg-teal-900 px-5 py-3 text-teal-50 shadow-xl shadow-teal-950/20 transition-opacity duration-1000 ${isInteractionHintClosing ? "opacity-0" : "opacity-100"}`}
+        >
+          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs">
+            {[
+              { Icon: Move, text: interactionHint.drag },
+              { Icon: ZoomIn, text: interactionHint.zoom },
+              { Icon: Keyboard, text: interactionHint.keyboard },
+            ].map(({ Icon, text }) => (
+              <p
+                key={text}
+                className="flex items-center gap-1.5 whitespace-nowrap text-teal-100"
+              >
+                <Icon size={14} aria-hidden="true" />
+                {text}
+              </p>
+            ))}
+          </div>
+          <button
+            type="button"
+            aria-label={interactionHint.close}
+            onClick={dismissInteractionHint}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-lg text-teal-200 transition hover:bg-teal-800 hover:text-white"
+          >
+            ×
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -642,8 +866,8 @@ function CanvasZoomControls({
   const displayZoom = getDisplayZoom(zoom);
 
   return (
-    <div className="overflow-hidden rounded-md border border-teal-200 bg-white/90 shadow-md shadow-teal-900/10 backdrop-blur">
-      <Tooltip content={labels.zoomIn} placement="left">
+    <div className="flex h-28 flex-col overflow-hidden rounded-md border border-teal-200 bg-white/90 shadow-md shadow-teal-900/10 backdrop-blur">
+      <Tooltip content={`${labels.zoomIn} · Ctrl+휠 / ↑`} placement="left">
         <button
           type="button"
           aria-label={labels.zoomIn}
@@ -656,11 +880,11 @@ function CanvasZoomControls({
       </Tooltip>
       <div
         aria-live="polite"
-        className="border-y border-zinc-200 px-1 py-1 text-center text-[10px] font-medium text-zinc-500"
+        className="flex flex-1 items-center justify-center border-y border-zinc-200 px-1 text-center text-[10px] font-medium text-zinc-500"
       >
         {Math.round(displayZoom * 100)}%
       </div>
-      <Tooltip content={labels.zoomOut} placement="left">
+      <Tooltip content={`${labels.zoomOut} · Ctrl+휠 / ↓`} placement="left">
         <button
           type="button"
           aria-label={labels.zoomOut}
@@ -698,7 +922,7 @@ function CanvasStepControls({
   const disabledClass = "cursor-default text-zinc-300 hover:bg-zinc-50";
 
   return (
-    <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-teal-200 bg-white/90 px-2 py-1.5 shadow-md shadow-teal-900/10 backdrop-blur">
+    <div className="workflow-canvas-step-controls absolute bottom-5 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 rounded-full border border-teal-200 bg-white/90 px-2 py-1.5 shadow-md shadow-teal-900/10 backdrop-blur md:flex">
       <Tooltip content={labels.previousNode} placement="top">
         <button
           type="button"
@@ -1056,6 +1280,38 @@ function getCanvasContentSize(
   }, BASE_CANVAS_SIZE);
 }
 
+function getMobileNodeOrder(nodes: CanvasNode[]) {
+  const orderedNodes = nodes.filter((node) => node.order !== undefined);
+  const orderById = new Map(
+    nodes.map((node) => {
+      if (node.order !== undefined) {
+        return [node.id, node.order] as const;
+      }
+
+      const nearestOrder = orderedNodes.reduce(
+        (closest, candidate) =>
+          Math.abs(candidate.y - node.y) < Math.abs(closest.y - node.y)
+            ? candidate
+            : closest,
+        orderedNodes[0] ?? node,
+      );
+
+      return [node.id, nearestOrder.order ?? Number.MAX_SAFE_INTEGER] as const;
+    }),
+  );
+
+  return new Map(
+    [...nodes]
+      .sort((first, second) => {
+        const orderDifference =
+          (orderById.get(first.id) ?? Number.MAX_SAFE_INTEGER) -
+          (orderById.get(second.id) ?? Number.MAX_SAFE_INTEGER);
+        return orderDifference || first.y - second.y || first.x - second.x;
+      })
+      .map((node, index) => [node.id, index] as const),
+  );
+}
+
 function getNodeHeight(node: CanvasNode) {
   if (node.height) {
     return node.height;
@@ -1080,6 +1336,7 @@ type MarkdownNodeProps = {
   node: CanvasNode;
   shell: CanvasShell;
   animationOrder?: number;
+  mobileOrder?: number;
   minHeight?: number;
   selected: boolean;
   onFocus: () => void;
@@ -1091,6 +1348,7 @@ function MarkdownNode({
   node,
   shell,
   animationOrder,
+  mobileOrder,
   minHeight,
   selected,
   onFocus,
@@ -1148,6 +1406,7 @@ function MarkdownNode({
     top: (node.y / 100) * BASE_CANVAS_SIZE.height,
     width: (node.width / 100) * BASE_CANVAS_SIZE.width,
     minHeight: node.height ?? minHeight,
+    order: mobileOrder,
     animationDelay:
       animationOrder === undefined
         ? undefined
@@ -1171,14 +1430,14 @@ function MarkdownNode({
       {node.title && node.appearance !== "transparent" ? (
         <div className="absolute -top-14 left-0 flex items-center gap-2 text-xl font-semibold leading-8 tracking-tight text-zinc-950 md:text-2xl">
           {node.icon ? (
-            <span className="pointer-events-none flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white shadow-sm">
+            <span className="pointer-events-none flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-zinc-300 bg-white p-1 shadow-sm">
               <Image
                 src={resolvePublicAssetPath(node.icon.src)}
                 alt={node.icon.alt}
                 width={30}
                 height={30}
                 unoptimized
-                className="h-[30px] w-[30px]"
+                className="h-full w-full rounded-lg"
               />
             </span>
           ) : null}
@@ -1208,7 +1467,7 @@ function MarkdownNode({
               ? "flex h-12 w-12 shrink-0 items-center justify-center"
               : isSection
                 ? "flex h-7 w-7 shrink-0 items-center justify-center"
-                : "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white"
+                : "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-300 bg-white p-1"
           }
         >
           <Image
@@ -1218,7 +1477,11 @@ function MarkdownNode({
             height={inlineIconSize}
             unoptimized
             className={
-              isTechnology ? "h-9 w-9" : isSection ? "h-[22px] w-[22px]" : "h-7 w-7"
+              isTechnology
+                ? "h-9 w-9"
+                : isSection
+                  ? "h-[22px] w-[22px]"
+                  : "h-full w-full rounded-lg"
             }
           />
         </div>
@@ -1261,6 +1524,7 @@ function MarkdownNode({
           />
         </div>
       ) : null}
+      {node.content}
       {node.markdown.trim() ? (
         <MarkdownBody
           markdown={node.markdown}
@@ -1279,6 +1543,8 @@ function MarkdownNode({
       tabIndex={isSection ? -1 : 0}
       aria-label={isSection ? undefined : labels.focusNode.replace("{node}", node.id)}
       data-appearance={node.appearance ?? "default"}
+      data-node-id={node.id}
+      data-image-role={node.image?.role}
       data-selected={selected}
       onClick={isSection ? undefined : onFocus}
       onKeyDown={(event) => {
