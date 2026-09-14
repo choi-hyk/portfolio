@@ -1,3 +1,4 @@
+import { ProfilePhotoScrapbook } from "./profile-photo-scrapbook";
 import { WorkflowCanvas } from "@/components/canvas/workflow-canvas";
 import { getHomeCanvasDefinition } from "@/components/pages/home/canvas-definition";
 
@@ -44,6 +45,12 @@ type HomeCanvasProps = {
       zoomIn: string;
       zoomOut: string;
     };
+    interactionHint: {
+      drag: string;
+      zoom: string;
+      keyboard: string;
+      close: string;
+    };
     profileCard: {
       koreanName: string;
       englishName: string;
@@ -80,10 +87,18 @@ export function HomeCanvas({ home, profile }: HomeCanvasProps) {
   return (
     <WorkflowCanvas
       label={home.title}
-      nodes={canvas.nodes}
+      nodes={canvas.nodes.map((node) =>
+        node.id === "profile-photos"
+          ? {
+              ...node,
+              content: <ProfilePhotoScrapbook label="프로필 사진" />,
+            }
+          : node,
+      )}
       edges={canvas.edges}
       shell={canvas.shell}
       labels={home.canvas}
+      interactionHint={home.interactionHint}
     />
   );
 }
