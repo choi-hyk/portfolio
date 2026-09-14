@@ -308,11 +308,12 @@ export function getBlueprint4AgentDetailCanvas(
       y: 7,
       width: 11,
       image: {
+        role: "icon",
         src: "/b4a.svg",
         alt: "Blueprint4Agent icon",
         width: 120,
         height: 120,
-        frame: "plain",
+        frame: "outline",
       },
       markdown: "",
     },
@@ -570,6 +571,7 @@ export function getBlueprint4AgentDetailCanvas(
 
   return {
     nodes,
+    architectureNodeIds: architectureNodes.map((node) => node.id),
     edges: [
       {
         id: "frontend-to-backend",

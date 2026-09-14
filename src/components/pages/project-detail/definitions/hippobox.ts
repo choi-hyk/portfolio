@@ -363,6 +363,9 @@ export function getHippoBoxDetailCanvas(
       width: 10,
       markdown: "**GHCR**\n\nRegistry",
     },
+  ];
+
+  const featureNodes: CanvasNode[] = [
     {
       id: "quick-start",
       title: "Quick Start",
@@ -557,11 +560,12 @@ export function getHippoBoxDetailCanvas(
         y: 7,
         width: 10,
         image: {
+          role: "icon",
           src: "/hippobox.svg",
           alt: "HippoBox icon",
           width: 120,
           height: 120,
-          frame: "plain",
+          frame: "outline",
         },
         markdown: "",
       },
@@ -619,7 +623,9 @@ export function getHippoBoxDetailCanvas(
         ].join("\n"),
       },
       ...architectureNodes,
+      ...featureNodes,
     ],
+    architectureNodeIds: architectureNodes.map((node) => node.id),
     edges: hippoboxArchitectureEdges,
   };
 }

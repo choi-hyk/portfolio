@@ -8,3 +8,5 @@ next-env.d.ts
 public/*.svg
 .playwright-mcp
 portfolio-*-reference.png
+
+.local

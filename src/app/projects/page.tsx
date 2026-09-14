@@ -11,6 +11,7 @@ export default function ProjectsPage() {
         projects={dictionary.projects}
         projectsPage={dictionary.projectsPage}
         canvasLabels={dictionary.home.canvas}
+        interactionHint={dictionary.home.interactionHint}
       />
     </main>
   );

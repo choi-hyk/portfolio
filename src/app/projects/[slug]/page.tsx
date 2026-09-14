@@ -26,7 +26,11 @@ export default async function ProjectDetailPage({
 
   return (
     <main className="min-h-screen bg-white text-zinc-700">
-      <ProjectDetailCanvas project={project} canvasLabels={dictionary.home.canvas} />
+      <ProjectDetailCanvas
+        project={project}
+        canvasLabels={dictionary.home.canvas}
+        interactionHint={dictionary.home.interactionHint}
+      />
     </main>
   );
 }

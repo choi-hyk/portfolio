@@ -15,94 +15,7 @@ export function getTodayInTechDetailCanvas(
   const outcomeX = (x: number) => outcomeOrigin.x + x;
   const outcomeY = (y: number) => outcomeOrigin.y + y;
 
-  const nodes: CanvasNode[] = [
-    {
-      id: "project-icon",
-      kind: "note",
-      appearance: "transparent",
-      excludeFromSequence: true,
-      x: 13,
-      y: 7,
-      width: 10,
-      image: {
-        src: "/today-in-tech.svg",
-        alt: "Today in Tech icon",
-        width: 120,
-        height: 120,
-        frame: "plain",
-      },
-      markdown: "",
-    },
-    {
-      id: "summary",
-      kind: "note",
-      appearance: "transparent",
-      order: 1,
-      x: 26,
-      y: 8,
-      width: 50,
-      markdown:
-        "# Today in Tech\n\n**Today in Tech는 기술 뉴스와 공식 기술 블로그의 중요한 흐름만 선별하여 지속적으로 축적하는 AI 기반 기술 아카이브입니다.**\n\n하나의 파이프라인을 통해 **RSS/Atom Feed와 공식 Sitemap**을 기반으로 최신 기술 콘텐츠를 수집하고, AI를 활용해 의미 있는 글을 문서로 정리합니다. 생성된 문서는 **Docusaurus** 기반 아카이브 사이트에 자동 배포되어 기술의 흐름을 지속적으로 기록하는 **Knowledge Archive**를 구성합니다.\n\n이 페이지에서는 Today in Tech를 개발하게 된 목표와 시스템 아키텍처, 주요 기능 및 구현 과정, 그리고 프로젝트를 통해 얻은 결과와 경험을 소개합니다.",
-    },
-    {
-      id: "info",
-      title: "Info",
-      kind: "note",
-      order: 2,
-      x: 79,
-      y: 10,
-      width: 24,
-      markdown: [
-        "- :calendar: 2026.5 ~ In Progress",
-        "- :stack: `OpenAI Agent` `Docusaurus` `GitHub Actions`",
-        "",
-        `- :github: [GitHub|Today in Tech GitHub 저장소로 이동](${project.href})`,
-        "- :website: [Website|Today in Tech 사이트로 이동](https://todayintech.github.io/todayintech/)",
-      ].join("\n"),
-    },
-    {
-      id: "project-goals",
-      kind: "note",
-      appearance: "transparent",
-      order: 3,
-      x: 13,
-      y: 35,
-      width: 47,
-      markdown:
-        "# Project Goals\n\n**기술 정보는 빠르게 소비되지만, 지식은 오래 남아야 합니다.**\n\n매일 수많은 기술 뉴스와 공식 블로그가 공개되지만, 여러 사이트를 직접 확인하고 중요한 내용을 정리하는 데는 많은 시간이 필요합니다. 시간이 지나면 과거의 기술 흐름을 다시 찾아보거나 특정 기술이 어떻게 발전했는지 추적하는 것도 쉽지 않습니다.\n\nToday in Tech는 이러한 문제를 해결하기 위해 시작한 프로젝트입니다. 콘텐츠를 자동으로 수집하고, AI가 의미 있는 글만 선별하여 하나의 기술 아카이브로 축적하는 것을 목표로 했습니다. 단순한 뉴스 요약이 아니라 기술의 흐름을 장기적으로 기록하고 검색할 수 있는 Knowledge Archive를 지향합니다.",
-    },
-    {
-      id: "goals-list",
-      title: "Goals",
-      kind: "note",
-      order: 4,
-      x: 64,
-      y: 42,
-      width: 30,
-      markdown: [
-        "",
-        "- 공식 기술 콘텐츠 자동 수집",
-        "- 중복 제거 및 후보 전처리",
-        "- Evidence 기반 원문 분석",
-        "- AI Writer 기반 문서 생성",
-        "- Docusaurus 기반 기술 아카이브 구축",
-      ].join("\n"),
-    },
-    {
-      id: "website-preview",
-      title: "Website Preview",
-      kind: "note",
-      order: 5,
-      x: 110,
-      y: 10,
-      width: 64,
-      embed: {
-        src: "https://todayintech.github.io/todayintech/",
-        title: "Today in Tech website preview",
-        height: 640,
-      },
-      markdown: "",
-    },
+  const architectureNodes: CanvasNode[] = [
     {
       id: "architecture-title",
       kind: "note",
@@ -317,6 +230,98 @@ export function getTodayInTechDetailCanvas(
       width: 12,
       markdown: "**GitHub Pages**\n\nPublished Archive",
     },
+  ];
+
+  const nodes: CanvasNode[] = [
+    {
+      id: "project-icon",
+      kind: "note",
+      appearance: "transparent",
+      excludeFromSequence: true,
+      x: 13,
+      y: 7,
+      width: 10,
+      image: {
+        role: "icon",
+        src: "/today-in-tech.svg",
+        alt: "Today in Tech icon",
+        width: 120,
+        height: 120,
+        frame: "outline",
+      },
+      markdown: "",
+    },
+    {
+      id: "summary",
+      kind: "note",
+      appearance: "transparent",
+      order: 1,
+      x: 26,
+      y: 8,
+      width: 50,
+      markdown:
+        "# Today in Tech\n\n**Today in Tech는 기술 뉴스와 공식 기술 블로그의 중요한 흐름만 선별하여 지속적으로 축적하는 AI 기반 기술 아카이브입니다.**\n\n하나의 파이프라인을 통해 **RSS/Atom Feed와 공식 Sitemap**을 기반으로 최신 기술 콘텐츠를 수집하고, AI를 활용해 의미 있는 글을 문서로 정리합니다. 생성된 문서는 **Docusaurus** 기반 아카이브 사이트에 자동 배포되어 기술의 흐름을 지속적으로 기록하는 **Knowledge Archive**를 구성합니다.\n\n이 페이지에서는 Today in Tech를 개발하게 된 목표와 시스템 아키텍처, 주요 기능 및 구현 과정, 그리고 프로젝트를 통해 얻은 결과와 경험을 소개합니다.",
+    },
+    {
+      id: "info",
+      title: "Info",
+      kind: "note",
+      order: 2,
+      x: 79,
+      y: 10,
+      width: 24,
+      markdown: [
+        "- :calendar: 2026.5 ~ In Progress",
+        "- :stack: `OpenAI Agent` `Docusaurus` `GitHub Actions`",
+        "",
+        `- :github: [GitHub|Today in Tech GitHub 저장소로 이동](${project.href})`,
+        "- :website: [Website|Today in Tech 사이트로 이동](https://todayintech.github.io/todayintech/)",
+      ].join("\n"),
+    },
+    {
+      id: "project-goals",
+      kind: "note",
+      appearance: "transparent",
+      order: 3,
+      x: 13,
+      y: 35,
+      width: 47,
+      markdown:
+        "# Project Goals\n\n**기술 정보는 빠르게 소비되지만, 지식은 오래 남아야 합니다.**\n\n매일 수많은 기술 뉴스와 공식 블로그가 공개되지만, 여러 사이트를 직접 확인하고 중요한 내용을 정리하는 데는 많은 시간이 필요합니다. 시간이 지나면 과거의 기술 흐름을 다시 찾아보거나 특정 기술이 어떻게 발전했는지 추적하는 것도 쉽지 않습니다.\n\nToday in Tech는 이러한 문제를 해결하기 위해 시작한 프로젝트입니다. 콘텐츠를 자동으로 수집하고, AI가 의미 있는 글만 선별하여 하나의 기술 아카이브로 축적하는 것을 목표로 했습니다. 단순한 뉴스 요약이 아니라 기술의 흐름을 장기적으로 기록하고 검색할 수 있는 Knowledge Archive를 지향합니다.",
+    },
+    {
+      id: "goals-list",
+      title: "Goals",
+      kind: "note",
+      order: 4,
+      x: 64,
+      y: 42,
+      width: 30,
+      markdown: [
+        "",
+        "- 공식 기술 콘텐츠 자동 수집",
+        "- 중복 제거 및 후보 전처리",
+        "- Evidence 기반 원문 분석",
+        "- AI Writer 기반 문서 생성",
+        "- Docusaurus 기반 기술 아카이브 구축",
+      ].join("\n"),
+    },
+    {
+      id: "website-preview",
+      title: "Website Preview",
+      kind: "note",
+      order: 5,
+      x: 110,
+      y: 10,
+      width: 64,
+      embed: {
+        src: "https://todayintech.github.io/todayintech/",
+        title: "Today in Tech website preview",
+        height: 640,
+      },
+      markdown: "",
+    },
+    ...architectureNodes,
     {
       id: "features-title",
       kind: "note",
@@ -473,6 +478,7 @@ export function getTodayInTechDetailCanvas(
 
   return {
     nodes,
+    architectureNodeIds: architectureNodes.map((node) => node.id),
     edges: [
       {
         id: "sources-to-collector",

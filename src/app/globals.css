@@ -34,6 +34,128 @@ html {
   min-height: 42rem;
 }
 
+.portfolio-top-navigation {
+  display: none;
+}
+
+[data-scroll-layout="true"] {
+  .portfolio-page-frame {
+    display: flow-root;
+    background-color: #fff;
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.055) 1px, transparent 1px);
+    background-size: 24px 24px;
+    overflow-x: clip;
+  }
+
+  .portfolio-page-frame main,
+  .portfolio-page-frame .workflow-canvas {
+    background-color: transparent;
+    background-image: none !important;
+  }
+
+  .portfolio-desktop-navigation {
+    display: none;
+  }
+
+  .portfolio-top-navigation {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+.home-photo-scrapbook {
+  position: relative;
+  width: min(100%, 540px);
+  aspect-ratio: 3 / 2;
+  isolation: isolate;
+}
+
+.home-photo-card {
+  position: absolute;
+  width: 42%;
+  padding: 6px 6px 16px;
+  border: 1px solid #d4d4d8;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  cursor: zoom-in;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.home-photo-card:hover {
+  z-index: 4;
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.18);
+  transform: translateY(-5px) rotate(0deg);
+}
+
+.home-photo-card img {
+  display: block;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.home-photo-card-1 {
+  top: 2%;
+  left: 29%;
+  z-index: 3;
+  transform: rotate(-3deg);
+}
+
+.home-photo-card-2 {
+  top: 15%;
+  left: 0;
+  z-index: 1;
+  transform: rotate(-9deg);
+}
+
+.home-photo-card-3 {
+  top: 19%;
+  left: 58%;
+  z-index: 2;
+  transform: rotate(8deg);
+}
+
+.home-photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.82);
+  cursor: zoom-out;
+}
+
+.home-photo-lightbox img {
+  max-width: min(90vw, 720px);
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  border: 6px solid #fff;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+.home-photo-lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+}
+
 .workflow-node {
   animation: workflow-node-enter 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-origin: top left;
@@ -114,7 +236,7 @@ html {
   stroke-dasharray: 0.035 0.025;
 }
 
-@media (min-width: 768px) {
+[data-scroll-layout="false"] {
   .workflow-canvas {
     height: 100vh;
     min-height: 100vh;
@@ -123,9 +245,27 @@ html {
   .workflow-node {
     position: absolute;
   }
+  .workflow-node-list {
+    display: block;
+    padding: 0;
+  }
+  .workflow-canvas-overlays,
+  .workflow-canvas-step-controls {
+    display: flex;
+  }
+  .workflow-surface > svg {
+    display: block;
+  }
 }
 
-@media (max-width: 767px) {
+[data-scroll-layout="true"] {
+  .workflow-surface {
+    position: relative;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+  }
+
   .workflow-node {
     left: auto !important;
     top: auto !important;
@@ -134,6 +274,71 @@ html {
 
   .workflow-node[data-appearance="section"] {
     min-height: 0 !important;
+  }
+}
+
+[data-scroll-layout="true"] {
+  .workflow-canvas {
+    height: auto !important;
+    min-height: 42rem;
+    overflow: visible;
+    touch-action: pan-y pinch-zoom;
+    cursor: auto;
+    background-position: 0 0 !important;
+    background-size: 24px 24px !important;
+    transition: none !important;
+  }
+
+  .workflow-node-list {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    gap: 2rem;
+    padding: 1.5rem;
+  }
+
+  .workflow-surface > svg {
+    display: none;
+  }
+
+  .workflow-node > div > .absolute {
+    position: relative;
+    top: auto;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .workflow-surface {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+  }
+
+  .workflow-node {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    animation: none;
+    transform: none !important;
+  }
+
+  .workflow-canvas-overlays,
+  .workflow-canvas-step-controls {
+    display: none !important;
+  }
+
+  .workflow-node[data-image-role="icon"] {
+    max-width: 120px;
+    align-self: flex-start;
+  }
+
+  .home-photo-scrapbook {
+    margin: 0;
   }
 }
 

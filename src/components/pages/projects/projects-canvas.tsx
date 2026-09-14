@@ -1,4 +1,5 @@
 import {
+  type CanvasInteractionHint,
   type WorkflowCanvasLabels,
   WorkflowCanvas,
 } from "@/components/canvas/workflow-canvas";
@@ -24,12 +25,14 @@ type ProjectsCanvasProps = {
     note: string;
   };
   canvasLabels: WorkflowCanvasLabels;
+  interactionHint: CanvasInteractionHint;
 };
 
 export function ProjectsCanvas({
   projects,
   projectsPage,
   canvasLabels,
+  interactionHint,
 }: ProjectsCanvasProps) {
   const canvas = getProjectsCanvasDefinition({ projects, projectsPage });
 
@@ -40,6 +43,7 @@ export function ProjectsCanvas({
       edges={canvas.edges}
       shell={projectCanvasShell}
       labels={canvasLabels}
+      interactionHint={interactionHint}
     />
   );
 }
