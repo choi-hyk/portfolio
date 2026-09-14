@@ -1,3 +1,9 @@
+import {
+  pdfArchitectureContent,
+  type PdfArchitectureContent,
+} from "./pdf-architecture-content";
+import { professionalContent, type ProfessionalContent } from "./professional-content";
+import { slideContent, type SlideContent } from "./slide-content";
 import type { Project } from "@/types/project";
 import type { Locale } from "./config";
 
@@ -7,6 +13,9 @@ type SkillGroup = {
 };
 
 export type Dictionary = {
+  pdfArchitectures: Record<string, PdfArchitectureContent>;
+  professional: ProfessionalContent;
+  slides: SlideContent;
   profile: {
     name: string;
     role: string;
@@ -21,6 +30,7 @@ export type Dictionary = {
     portfolio: string;
     overview: string;
     projects: string;
+    document: string;
     openSource: string;
     skills: string;
     external: string;
@@ -28,6 +38,7 @@ export type Dictionary = {
     collapsedLabel: string;
     expandSidebar: string;
     collapseSidebar: string;
+    canvasHelp: string;
   };
   home: {
     eyebrow: string;
@@ -60,6 +71,12 @@ export type Dictionary = {
       focusNode: string;
       zoomIn: string;
       zoomOut: string;
+    };
+    interactionHint: {
+      drag: string;
+      zoom: string;
+      keyboard: string;
+      close: string;
     };
     profileCard: {
       koreanName: string;
@@ -124,6 +141,9 @@ export type Dictionary = {
 
 export const dictionaries: Record<Locale, Dictionary> = {
   ko: {
+    pdfArchitectures: pdfArchitectureContent.ko,
+    professional: professionalContent.ko,
+    slides: slideContent.ko,
     profile: {
       name: "Choi Hyuk",
       role: "Backend / AI Application Developer",
@@ -139,6 +159,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       portfolio: "Portfolio",
       overview: "Overview",
       projects: "Projects",
+      document: "Slides",
       openSource: "Open Source",
       skills: "Skills",
       external: "External",
@@ -146,6 +167,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       collapsedLabel: "Collapsed portfolio navigation",
       expandSidebar: "사이드바 열기",
       collapseSidebar: "사이드바 닫기",
+      canvasHelp: "캔버스 조작 방법",
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
@@ -186,6 +208,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
         focusNode: "{node} 노드로 이동",
         zoomIn: "캔버스 확대",
         zoomOut: "캔버스 축소",
+      },
+      interactionHint: {
+        drag: "캔버스 이동: 스페이스바 + 마우스 드래그",
+        zoom: "확대·축소: Ctrl + 마우스 휠 또는 ↑/↓ 키",
+        keyboard: "노드 이동: ←/→ 키",
+        close: "확인",
       },
       profileCard: {
         koreanName: "최혁",
@@ -320,8 +348,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         "저는 **지식을 효과적으로 저장하고 활용할 수 있는 시스템**과 **AI 워크플로우**를 만드는 데 관심이 있습니다.",
       description:
         "**FastAPI 기반의 백엔드**를 중심으로 **RAG**, **Agent Workflow**, **자동화 시스템**을 구현하며,\n**AI를 실제 서비스에 자연스럽게 녹여내는 개발**을 지향합니다.",
-      note:
-        "이 페이지에서는 이러한 관심사를 바탕으로 진행한 주요 프로젝트들을 소개합니다.\n자세한 개발 과정과 프로젝트 내용은 프로젝트별 상세 페이지에서 확인할 수 있습니다.",
+      note: "이 페이지에서는 이러한 관심사를 바탕으로 진행한 주요 프로젝트들을 소개합니다.\n자세한 개발 과정과 프로젝트 내용은 프로젝트별 상세 페이지에서 확인할 수 있습니다.",
     },
     projects: [
       {
@@ -387,6 +414,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     ],
   },
   en: {
+    pdfArchitectures: pdfArchitectureContent.en,
+    professional: professionalContent.en,
+    slides: slideContent.en,
     profile: {
       name: "Choi Hyuk",
       role: "Backend / AI Application Developer",
@@ -402,6 +432,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       portfolio: "Portfolio",
       overview: "Overview",
       projects: "Projects",
+      document: "Slides",
       openSource: "Open Source",
       skills: "Skills",
       external: "External",
@@ -409,6 +440,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       collapsedLabel: "Collapsed portfolio navigation",
       expandSidebar: "Expand sidebar",
       collapseSidebar: "Collapse sidebar",
+      canvasHelp: "Canvas controls",
     },
     home: {
       eyebrow: "Backend · RAG · MCP · Agentic Workflow",
@@ -449,6 +481,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
         focusNode: "Focus {node} node",
         zoomIn: "Zoom in canvas",
         zoomOut: "Zoom out canvas",
+      },
+      interactionHint: {
+        drag: "Move canvas: Space + mouse drag",
+        zoom: "Zoom: Ctrl + mouse wheel or ↑/↓ keys",
+        keyboard: "Move nodes: ←/→ keys",
+        close: "Got it",
       },
       profileCard: {
         koreanName: "최혁",
@@ -583,8 +621,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         "I am interested in building **systems for storing and applying knowledge effectively** and **AI-based workflows**.",
       description:
         "On **FastAPI-based backends**, I design **RAG**, **Agent Workflow**, and **automation systems**, focusing on **applying AI reliably to real services**.",
-      note:
-        "This page introduces the main projects I have built around these interests.\nYou can open each project detail page for the development process.",
+      note: "This page introduces the main projects I have built around these interests.\nYou can open each project detail page for the development process.",
     },
     projects: [
       {
@@ -651,6 +688,29 @@ export const dictionaries: Record<Locale, Dictionary> = {
   },
 };
 
+const projectOrder: Record<string, number> = {
+  blueprint4agent: 0,
+  hippobox: 1,
+  "today-in-tech": 2,
+  "say-it-its-ok": 3,
+};
+
+function compareProjects(first: { slug: string }, second: { slug: string }) {
+  return (
+    (projectOrder[first.slug] ?? Number.MAX_SAFE_INTEGER) -
+    (projectOrder[second.slug] ?? Number.MAX_SAFE_INTEGER)
+  );
+}
+
 export function getDictionary(locale: Locale = "ko") {
-  return dictionaries[locale];
+  const dictionary = dictionaries[locale];
+
+  return {
+    ...dictionary,
+    home: {
+      ...dictionary.home,
+      featuredProjects: [...dictionary.home.featuredProjects].sort(compareProjects),
+    },
+    projects: [...dictionary.projects].sort(compareProjects),
+  };
 }
