@@ -19,9 +19,14 @@ const PortfolioViewportContext = createContext<PortfolioViewportContextValue>({
 });
 
 const EXPANDED_SIDEBAR_OCCLUSION = 232;
+const touchLayoutQuery = "(hover: none) and (pointer: coarse)";
 
 export function isScrollLayout() {
-  return window.innerWidth <= window.screen.availWidth / 2;
+  return (
+    window.innerWidth <= 768 ||
+    window.matchMedia(touchLayoutQuery).matches ||
+    window.innerWidth <= window.screen.availWidth / 2
+  );
 }
 
 export function PortfolioViewportProvider({
@@ -36,10 +41,15 @@ export function PortfolioViewportProvider({
       setReady(true);
     };
 
+    const touchLayout = window.matchMedia(touchLayoutQuery);
     updateSidebarVisibility();
     window.addEventListener("resize", updateSidebarVisibility);
 
-    return () => window.removeEventListener("resize", updateSidebarVisibility);
+    touchLayout.addEventListener("change", updateSidebarVisibility);
+    return () => {
+      window.removeEventListener("resize", updateSidebarVisibility);
+      touchLayout.removeEventListener("change", updateSidebarVisibility);
+    };
   }, []);
 
   return (

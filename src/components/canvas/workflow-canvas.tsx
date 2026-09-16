@@ -125,6 +125,7 @@ export type WorkflowCanvasLabels = {
 };
 
 export type CanvasInteractionHint = {
+  touch: string;
   drag: string;
   zoom: string;
   keyboard: string;
@@ -246,7 +247,7 @@ export function WorkflowCanvas({
     const showHint = () => {
       setIsInteractionHintClosing(false);
       setIsInteractionHintOpen(true);
-      canvasRef.current?.focus();
+      canvasRef.current?.focus({ preventScroll: true });
       interactionHintTimerRef.current = window.setTimeout(
         () => dismissInteractionHint(),
         5000,
@@ -272,7 +273,7 @@ export function WorkflowCanvas({
   }, [interactionHint]);
 
   useEffect(() => {
-    const focusCanvas = () => canvasRef.current?.focus();
+    const focusCanvas = () => canvasRef.current?.focus({ preventScroll: true });
     window.addEventListener("portfolio:focus-canvas", focusCanvas);
     return () => window.removeEventListener("portfolio:focus-canvas", focusCanvas);
   }, []);
@@ -778,11 +779,11 @@ export function WorkflowCanvas({
         <CanvasZoomControls
           zoom={zoom}
           onZoomIn={() => {
-            canvasRef.current?.focus();
+            canvasRef.current?.focus({ preventScroll: true });
             updateZoom(zoom + ZOOM_STEP);
           }}
           onZoomOut={() => {
-            canvasRef.current?.focus();
+            canvasRef.current?.focus({ preventScroll: true });
             updateZoom(zoom - ZOOM_STEP);
           }}
           labels={labels}
@@ -813,14 +814,17 @@ export function WorkflowCanvas({
         <div
           role="status"
           aria-live="polite"
-          className={`fixed left-1/2 top-4 z-50 flex w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 items-center gap-4 rounded-full bg-teal-900 px-5 py-3 text-teal-50 shadow-xl shadow-teal-950/20 transition-opacity duration-1000 ${isInteractionHintClosing ? "opacity-0" : "opacity-100"}`}
+          className={`workflow-interaction-hint fixed left-1/2 top-4 z-50 flex w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 items-center gap-4 rounded-full bg-teal-900 px-5 py-3 text-teal-50 shadow-xl shadow-teal-950/20 transition-opacity duration-1000 ${isInteractionHintClosing ? "opacity-0" : "opacity-100"}`}
         >
           <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs">
-            {[
-              { Icon: Move, text: interactionHint.drag },
-              { Icon: ZoomIn, text: interactionHint.zoom },
-              { Icon: Keyboard, text: interactionHint.keyboard },
-            ].map(({ Icon, text }) => (
+            {(portfolioViewport.scrollLayout
+              ? [{ Icon: Move, text: interactionHint.touch }]
+              : [
+                  { Icon: Move, text: interactionHint.drag },
+                  { Icon: ZoomIn, text: interactionHint.zoom },
+                  { Icon: Keyboard, text: interactionHint.keyboard },
+                ]
+            ).map(({ Icon, text }) => (
               <p
                 key={text}
                 className="flex items-center gap-1.5 whitespace-nowrap text-teal-100"
@@ -1355,6 +1359,7 @@ function MarkdownNode({
   onResize,
   labels,
 }: MarkdownNodeProps) {
+  const { scrollLayout } = usePortfolioViewport();
   const nodeRef = useRef<HTMLElement>(null);
   const variant = {
     note: "border-t-4 border-t-teal-500 bg-white",
@@ -1539,16 +1544,26 @@ function MarkdownNode({
   return (
     <article
       ref={nodeRef}
-      role={isSection ? "presentation" : "button"}
-      tabIndex={isSection ? -1 : 0}
-      aria-label={isSection ? undefined : labels.focusNode.replace("{node}", node.id)}
+      role={isSection ? "presentation" : scrollLayout ? undefined : "button"}
+      tabIndex={isSection || scrollLayout ? -1 : 0}
+      aria-label={
+        isSection || scrollLayout
+          ? undefined
+          : labels.focusNode.replace("{node}", node.id)
+      }
       data-appearance={node.appearance ?? "default"}
       data-node-id={node.id}
       data-image-role={node.image?.role}
       data-selected={selected}
-      onClick={isSection ? undefined : onFocus}
+      onClick={
+        isSection
+          ? undefined
+          : () => {
+              if (!isScrollLayout()) onFocus();
+            }
+      }
       onKeyDown={(event) => {
-        if (isSection) {
+        if (isSection || event.target !== event.currentTarget) {
           return;
         }
 

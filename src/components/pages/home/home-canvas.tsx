@@ -1,5 +1,8 @@
 import { ProfilePhotoScrapbook } from "./profile-photo-scrapbook";
-import { WorkflowCanvas } from "@/components/canvas/workflow-canvas";
+import {
+  type CanvasInteractionHint,
+  WorkflowCanvas,
+} from "@/components/canvas/workflow-canvas";
 import { getHomeCanvasDefinition } from "@/components/pages/home/canvas-definition";
 
 type HomeCanvasProps = {
@@ -45,12 +48,7 @@ type HomeCanvasProps = {
       zoomIn: string;
       zoomOut: string;
     };
-    interactionHint: {
-      drag: string;
-      zoom: string;
-      keyboard: string;
-      close: string;
-    };
+    interactionHint: CanvasInteractionHint;
     profileCard: {
       koreanName: string;
       englishName: string;
