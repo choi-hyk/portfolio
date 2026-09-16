@@ -73,6 +73,7 @@ export type Dictionary = {
       zoomOut: string;
     };
     interactionHint: {
+      touch: string;
       drag: string;
       zoom: string;
       keyboard: string;
@@ -210,6 +211,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         zoomOut: "캔버스 축소",
       },
       interactionHint: {
+        touch:
+          "위아래로 밀어 둘러보고, 링크와 사진을 탭하세요. 두 손가락으로 확대할 수 있어요.",
         drag: "캔버스 이동: 스페이스바 + 마우스 드래그",
         zoom: "확대·축소: Ctrl + 마우스 휠 또는 ↑/↓ 키",
         keyboard: "노드 이동: ←/→ 키",
@@ -483,6 +486,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         zoomOut: "Zoom out canvas",
       },
       interactionHint: {
+        touch: "Swipe up or down to explore. Tap links and photos, or pinch to zoom.",
         drag: "Move canvas: Space + mouse drag",
         zoom: "Zoom: Ctrl + mouse wheel or ↑/↓ keys",
         keyboard: "Move nodes: ←/→ keys",

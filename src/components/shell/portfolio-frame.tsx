@@ -95,21 +95,28 @@ export function PortfolioFrame({
             const active =
               pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
             return (
-              <Link
+              <Tooltip
                 key={href}
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className={`flex h-9 min-w-0 flex-1 items-center justify-center gap-2 rounded-full px-2 text-xs font-medium transition sm:text-sm ${active ? "bg-teal-100 text-teal-950 ring-1 ring-teal-200" : "text-zinc-600 hover:bg-teal-50 hover:text-teal-900"}`}
+                content={label}
+                placement="bottom"
+                className="portfolio-top-page-item min-w-0 flex-1"
               >
-                <Icon size={17} className="shrink-0" aria-hidden="true" />
-                <span>{label}</span>
-              </Link>
+                <Link
+                  href={href}
+                  aria-label={label}
+                  aria-current={active ? "page" : undefined}
+                  className={`portfolio-top-page-link flex h-9 min-w-0 flex-1 items-center justify-center gap-2 rounded-full px-2 text-xs font-medium transition sm:text-sm ${active ? "bg-teal-100 text-teal-950 ring-1 ring-teal-200" : "text-zinc-600 hover:bg-teal-50 hover:text-teal-900"}`}
+                >
+                  <Icon size={17} className="shrink-0" aria-hidden="true" />
+                  <span>{label}</span>
+                </Link>
+              </Tooltip>
             );
           })}
           <div
             role="group"
             aria-label={navigation.external}
-            className="ml-1 flex shrink-0 items-center gap-1 border-l border-teal-100 pl-2"
+            className="portfolio-top-external-links ml-1 flex shrink-0 items-center gap-1 border-l border-teal-100 pl-2"
           >
             {externalLinks.map(({ href, label, icon: Icon }) => (
               <Tooltip key={href} content={label} placement="bottom">
@@ -124,7 +131,11 @@ export function PortfolioFrame({
                 </a>
               </Tooltip>
             ))}
-            <Tooltip content={navigation.canvasHelp} placement="bottom">
+            <Tooltip
+              content={navigation.canvasHelp}
+              placement="bottom"
+              className="portfolio-top-canvas-help"
+            >
               <button
                 type="button"
                 aria-label={navigation.canvasHelp}
